@@ -1,0 +1,3 @@
+OSM_road_net:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/OSM_road_net.parquet

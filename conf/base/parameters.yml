@@ -1,0 +1,20 @@
+place_name: "Dublin, Ireland"
+directions:
+  - "upper"
+  - "lower"
+abbreviations:
+  st: "street"
+  rd: "road"
+  ave: "avenue"
+  blvd: "boulevard"
+words_to_rm:
+  - "street"
+  - "st"
+  - "road"
+  - "rd"
+  - "square"
+  - "ave"
+  - "avenue"
+  - "drive"
+crs_metric: "EPSG:2157"
+crs_latlon: "EPSG:4326"
