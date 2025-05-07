@@ -1,9 +1,21 @@
 ## dependencies
+from typing import List, Dict
+from typing import Optional
+import geopandas as gpd
+import pandas as pd
+from shapely.geometry import Point
+import subprocess
+import platform
+from functools import partial
+from datetime import timedelta
+from concurrent.futures import ProcessPoolExecutor
+import shapely
+import warnings
+
 import sys
 sys.path.append('/home/luisa/Documents/Projects/OSMRoadAssembler/src')
 from process_roads import *
-from typing import List, Dict
-import geopandas as gpd
+from .Valhalla_map_matching import process_single_date
 
 
 '''
@@ -81,6 +93,113 @@ def OSM_roads(place_name: str,
 
 
 
-def get_air(raw_air_datapath,
-            ):
-    return
+def get_air(air_df: pd.DataFrame,
+            timestamp_column: str,
+            start_time: Optional[str],
+            end_time: Optional[str],
+            latitude_column: str,
+            longitude_column: str,
+            CRS: str = "EPSG:4326") -> gpd.GeoDataFrame:
+    # parse timestamp column
+    air_df[timestamp_column] = pd.to_datetime(air_df[timestamp_column], errors='coerce')
+    
+    # drop unparsable timestamp rows
+    air_df = air_df.dropna(subset=[timestamp_column])
+
+    # filter by time
+    if start_time and end_time:
+        start_ts, end_ts = pd.Timestamp(start_time, tz='UTC'), pd.Timestamp(end_time, tz='UTC')
+        air_df = air_df[(air_df[timestamp_column] >= pd.to_datetime(start_ts)) & (air_df[timestamp_column] <= pd.to_datetime(end_ts))]
+
+    # to geodataframe
+    air_df = air_df.dropna(subset=[latitude_column, longitude_column])
+    air_df["geometry"] = [Point(xy) for xy in zip(air_df[longitude_column], air_df[latitude_column])]
+    air_gdf = gpd.GeoDataFrame(air_df, geometry="geometry", crs=CRS)
+    air_gdf.reset_index(drop=True, inplace=True)
+
+    return air_gdf
+
+
+
+def run_valhalla_mapmatching(air_data: gpd.GeoDataFrame,
+                             use_valhalla: bool,
+                             timestamp_column: Optional[str] = 'gps_timestamp',
+                             MAX_POINTS: Optional[int] = 16000,
+                             MIN_POINTS: Optional[int] = 10,
+                             MINUTES_TIME_GAP: Optional[int] = 5,
+                             CRS_LATLON: Optional[str] = "EPSG:4326",
+                             valhalla_docker_img: Optional[str] = "gisops_docker_valhalla_1") -> gpd.GeoDataFrame:
+    '''
+    This function execute map-matching using Valhalla Docker.
+    Using this processing is totally optional, but may increase the GPS coordinates precision.
+
+    The function:
+        1. activate the Valhalla docker image
+        2. run the map matching code contained in Valhalla_map_matching.py
+        3. deactivate the docker image once the process is completed
+
+    NOTE: it should only be used when data are collected along the trajectory of a single
+    moving vehicle; if multiple vehicle are used to collect data, this function should be
+    applied separately to observations from different vehicle.
+
+    TODO: in the future, make the function applicable to multiple vehicle's trajectories 
+    using vehicles' unique identifiers.
+    '''
+
+    if use_valhalla == False:
+        print('Valhalla map-matching skipped!')
+        return air_data
+
+    else:
+        warnings.warn(
+            "This function is intended for single-vehicle trajectories."
+            "If the data contains simultaneous movements from multiple vehicles, results may be unreliable.",
+            UserWarning 
+            )
+        
+        start_docker = ["docker", "start", valhalla_docker_img]
+        stop_docker = ["docker", "stop", valhalla_docker_img]
+
+        if platform.system() == "Linux":
+            start_docker = ["sudo"] + start_docker
+            stop_docker = ["sudo"] + stop_docker
+
+        try:
+            # start Docker container
+            subprocess.run(start_docker, check=True)
+
+            air_data['geometry'] = air_data['geometry'].apply(lambda wkb: shapely.wkb.loads(wkb))
+            air_data = gpd.GeoDataFrame(air_data, geometry='geometry', crs=CRS_LATLON)
+            air_data['date'] = air_data[timestamp_column].dt.date
+            unique_dates = air_data['date'].unique()
+
+            # map-matching parameters
+            url = 'http://localhost:8002/trace_route'
+            headers = {'Content-Type': 'application/json'}
+
+            # process each date in parallel with ProcessPoolExecutor
+            # use partial to set all other arguments of process_single_date
+            process_single_date_partial = partial(process_single_date, 
+                                                air_data=air_data, 
+                                                MAX_POINTS=MAX_POINTS, 
+                                                MIN_POINTS=MIN_POINTS, 
+                                                url=url, 
+                                                headers=headers, 
+                                                TIME_GAP_THRESHOLD=timedelta(minutes=MINUTES_TIME_GAP),
+                                                timestamp_column=timestamp_column,
+                                                CRS_LATLON=CRS_LATLON)
+            with ProcessPoolExecutor() as executor:
+                results = list(executor.map(process_single_date_partial, unique_dates))
+
+            # flatten results
+            list_matched_chunks = [item for sublist in results for item in sublist]
+            full_matched_df = pd.concat(list_matched_chunks, ignore_index=True)
+            print(f'Map-Matching completed!\nProcessed {len(unique_dates)} days in total.')
+
+            return full_matched_df
+
+        finally:
+            # always stop Docker container after execution, even if an error happens
+            subprocess.run(stop_docker, check=True)
+
+

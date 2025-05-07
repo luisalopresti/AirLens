@@ -1,3 +1,16 @@
 OSM_road_net:
   type: pandas.ParquetDataset
   filepath: data/03_primary/OSM_road_net.parquet
+
+raw_air_data:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/AirView_DublinCity_Measurements_ugm3.csv
+
+filtered_raw_air_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/AirView_filtered.parquet
+
+valhalla_map_matched:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/AirView_mapmatched.parquet
+
