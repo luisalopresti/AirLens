@@ -25,7 +25,7 @@ def split_trajectories_by_gaps(subset_df, time_gap_threshold, timestamp_column):
     number of Single Point Measurements within the same day, where consecutive points 
     are not more than 5 minutes apart.]
     '''
-    subset_df = subset_df.sort_values(by=timestamp_column)
+    subset_df = subset_df.sort_values(by=timestamp_column).reset_index(drop=True)
     # compute difference between consecutive timestamps in seconds
     subset_df['time_diff'] = subset_df[timestamp_column].diff() # .fillna(timedelta(seconds=0))
     # NaT in first row cause no previous timestamp: fill it with time diff between 1st and 2nd row
