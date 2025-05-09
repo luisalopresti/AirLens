@@ -2,6 +2,7 @@ from kedro.pipeline import Pipeline, node
 from .nodes import OSM_roads
 from .nodes import get_air
 from .nodes import run_valhalla_mapmatching
+from .nodes import outlier_detection
 
 
 def create_pipeline(**kwargs):
@@ -44,5 +45,18 @@ def create_pipeline(**kwargs):
                     "params:valhalla_docker_img"],
             outputs="valhalla_map_matched",
             name="map_match"
+        ),
+        ## OUTLIER DETECTION
+        node(
+            func=outlier_detection,
+            inputs={
+                "df" : "valhalla_map_matched",
+                "timestamp_column" : "params:timestamp_column",
+                "pollutant_column" : "params:pollutant"
+            }, ## NOTE: all other parameters left to node default values
+            outputs=["cleaned_air_gdf", "outliers_gdf"],
+            name="spatiotemporal_outliers"
         )
     ])
+
+

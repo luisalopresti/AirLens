@@ -1,6 +1,10 @@
 ## parameters used across different nodes
 crs_metric: "EPSG:2157"
 crs_latlon: "EPSG:4326"
+pollutant: "NO2_ugm3"
+timestamp_column: "gps_timestamp"
+latitude_column: "latitude"
+longitude_column: "longitude"
 
 
 ## parameters to process the street network
@@ -30,11 +34,8 @@ words_to_rm:
 ## you should modify the below accoding to your own air quality data
 ## function: get_air
 ## node name: filtered_raw_air
-timestamp_column: "gps_timestamp"
 start_time: "2021-11-01T00:00:00"
 end_time: "2022-03-31T23:59:59"
-latitude_column: "latitude"
-longitude_column: "longitude"
 
 
 ## parameters for Valhalla Docker map-matching

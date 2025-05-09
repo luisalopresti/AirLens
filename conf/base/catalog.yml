@@ -14,3 +14,10 @@ valhalla_map_matched:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/AirView_mapmatched.parquet
 
+cleaned_air_gdf:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/cleaned_air.parquet
+
+outliers_gdf:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/outliers.parquet
