@@ -378,14 +378,6 @@ def outlier_detection(df: gpd.GeoDataFrame,
 ## For convenience we define all names of parameters that we do not reccomend to change starting with an underscore.
 ## (atm only the valhalla parameters - the ones that atm are in all CAPS)
 
-### IMPORTANT TODO
-## TODO: should change the valhalla mapmatch so that final geometry is called GEOMETRY (not map_match_pt)
-## and can replace the original geom (dropped)
-
-## TODO:
-## then re-run outlier_detection, which currently uses the geometry (column "geometry")
-## so atm not the map-matched one, but once you change the valhalla func it will be using the map-matched
-
 ## TODO:
 ## viz outliers: see test_outliers.ipynb & implement it in the pipeline
 
