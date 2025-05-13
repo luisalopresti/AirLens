@@ -21,3 +21,11 @@ cleaned_air_gdf:
 outliers_gdf:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/outliers.parquet
+
+outlier_spatial_distribution:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/outlier_spatial_distribution.png 
+
+distribution_before_after_outlier_removal:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/distribution_before_after_outlier_removal.png 

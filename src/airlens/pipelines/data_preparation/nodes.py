@@ -1,5 +1,5 @@
 ## dependencies
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from typing import Optional, Literal
 import geopandas as gpd
 import pandas as pd
@@ -10,6 +10,9 @@ import platform
 from functools import partial
 from datetime import timedelta
 from concurrent.futures import ProcessPoolExecutor
+import matplotlib.pyplot as plt
+import contextily as ctx
+import seaborn as sns
 import shapely
 import warnings
 
@@ -149,7 +152,7 @@ def run_valhalla_mapmatching(air_data: gpd.GeoDataFrame,
     moving vehicle; if multiple vehicle are used to collect data, this function should be
     applied separately to observations from different vehicle.
 
-    TODO: in the future, make the function applicable to multiple vehicle's trajectories 
+    Future implementations will make the function applicable to multiple vehicle's trajectories 
     using vehicles' unique identifiers.
     '''
 
@@ -372,13 +375,156 @@ def outlier_detection(df: gpd.GeoDataFrame,
 
 
 
+def viz_outliers(df_outliers: gpd.GeoDataFrame, 
+                 figsize: Tuple[float, float] = None,
+                 crs_latlon: Optional[str] = "EPSG:4326"):
+    '''
+    Plot of outlier spatial distribution;
+    the different maps visualize the number of outliers per hexagon
+    accoding to temporal dimension, spatial dimension, and the intersection of the two.
+    '''
+    sns.set(style="whitegrid")
+
+    # ensure parquet is read correctly within kedro
+    df_outliers['geometry'] = df_outliers['geometry'].apply(lambda wkb: shapely.wkb.loads(wkb))
+    df_outliers = gpd.GeoDataFrame(df_outliers, geometry='geometry', crs=crs_latlon)
+
+    # get outliers for each dimension
+    outlier_filters = {
+    'Temporal Outliers': df_outliers[df_outliers['is_temporal_outlier'] == True],
+    'Spatial Outliers': df_outliers[df_outliers['is_spatial_outlier'] == True],
+    'Spatiotemporal Outliers': df_outliers[df_outliers['is_spatiotemp_outlier'] == True]
+    }
+
+    # adjust figsize to context if proportion not passed as input
+    if figsize:
+        fig = plt.figure(constrained_layout=True, figsize=figsize)
+    else:
+        width, height = plt.rcParams.get('figure.figsize')
+        aspect_ratio = height / width
+        base = 5
+        figsize = (base*(width * aspect_ratio)/3, base*height)
+        fig = plt.figure(constrained_layout=True, figsize=figsize)
+
+    outer_gs = fig.add_gridspec(3, 1)
+
+    ## plot
+    for i, (title, temp_out) in enumerate(outlier_filters.items()):
+        # grid for main plot + marginal histograms
+        gs = outer_gs[i].subgridspec(4, 4)
+        ax_main = fig.add_subplot(gs[1:, :-1])
+        ax_top = fig.add_subplot(gs[0, :-1], sharex=ax_main)
+        ax_right = fig.add_subplot(gs[1:, -1], sharey=ax_main)
+
+
+        # hexbin map
+        hb = ax_main.hexbin(temp_out.geometry.x, temp_out.geometry.y, gridsize=60,
+                            cmap='Reds', mincnt=1, edgecolors='black', linewidths=0.2)
+
+        # marginal hists
+        ax_top.hist(temp_out.geometry.x, bins=40, color='crimson')
+        ax_right.hist(temp_out.geometry.y, bins=40, orientation='horizontal', color='crimson')
+
+        # remove ticks and labels
+        for ax in [ax_main, ax_top, ax_right]:
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_xlabel('')
+            ax.set_ylabel('')
+            for spine in ax.spines.values():
+                spine.set_visible(False)
+
+        # basemap
+        ctx.add_basemap(ax_main, crs=temp_out.crs)
+
+        # title per row
+        ax_main.set_title(title, fontsize=12, loc='left')
+
+    fig.suptitle('Spatial Distribution of Different Outlier Types', fontsize=16)
+    fig.set_constrained_layout(True)
+    return plt
+
+
+
+def distrubution_comparison(original_data: gpd.GeoDataFrame,
+                            cleaned_data: gpd.GeoDataFrame, 
+                            pollutant_column: str):
+    '''Plot of pollutant distribution before and after outleir removal'''
+    
+    def get_stats(series):
+        '''Get summary statistics'''
+        return {
+            'Min': round(series.min(), 2),
+            'Max': round(series.max(), 2),
+            'Mean': round(series.mean(), 2),
+            'Median': round(series.median(), 2)
+        }
+
+    sns.set(style="whitegrid")
+
+    ## plot
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
+
+    # BEFORE OUTLIER REMOVAL
+    sns.histplot(
+        original_data[pollutant_column], 
+        bins=100, 
+        kde=True, 
+        color="grey", 
+        ax=axes[0], 
+        stat="density", 
+        alpha=0.6
+    )
+    axes[0].set_title("Dataset Before Outlier Removal")
+    axes[0].set_xlabel(f"{pollutant_column} concentration")
+    axes[0].set_ylabel("")
+
+    # add stats before
+    stats_before = get_stats(original_data[pollutant_column])
+    stats_text_before = '\n'.join([f"{k}: {v}" for k, v in stats_before.items()])
+    axes[0].text(
+        0.98, 0.98, stats_text_before, 
+        transform=axes[0].transAxes,
+        verticalalignment='top',
+        horizontalalignment='right',
+        fontsize=10,
+        bbox=dict(facecolor='white', alpha=0.8, edgecolor='grey')
+    )
+
+
+    # AFTER OUTLIERS REMOVAL
+    sns.histplot(
+        cleaned_data[pollutant_column],
+        bins=100, 
+        kde=True, 
+        color="crimson", 
+        ax=axes[1], 
+        stat="density", 
+        alpha=0.6
+    )
+    axes[1].set_title("Dataset After Outlier Removal")
+    axes[1].set_xlabel(f"{pollutant_column} concentration")
+    axes[1].set_ylabel("")
+
+    # add stats after
+    stats_after = get_stats(cleaned_data[pollutant_column])
+    stats_text_after = '\n'.join([f"{k}: {v}" for k, v in stats_after.items()])
+    axes[1].text(
+        0.98, 0.98, stats_text_after, 
+        transform=axes[1].transAxes,
+        verticalalignment='top',
+        horizontalalignment='right',
+        fontsize=10,
+        bbox=dict(facecolor='white', alpha=0.8, edgecolor='crimson')
+    )
+
+    plt.tight_layout()
+    return plt
+
 
 
 ## TODO: put name of all params not reccomended to change starting with underscore
 ## For convenience we define all names of parameters that we do not reccomend to change starting with an underscore.
 ## (atm only the valhalla parameters - the ones that atm are in all CAPS)
 
-## TODO:
-## viz outliers: see test_outliers.ipynb & implement it in the pipeline
-
-
+## TODO: comment input and outputs for all functions

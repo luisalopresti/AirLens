@@ -3,6 +3,8 @@ from .nodes import OSM_roads
 from .nodes import get_air
 from .nodes import run_valhalla_mapmatching
 from .nodes import outlier_detection
+from .nodes import viz_outliers
+from .nodes import distrubution_comparison
 
 
 def create_pipeline(**kwargs):
@@ -56,7 +58,27 @@ def create_pipeline(**kwargs):
             }, ## NOTE: all other parameters left to node default values
             outputs=["cleaned_air_gdf", "outliers_gdf"],
             name="spatiotemporal_outliers"
+        ),
+        ## VISUALIZE OUTLIERS
+        node(
+            func=viz_outliers,
+            inputs={
+                "df_outliers" : "outliers_gdf", 
+                "crs_latlon" : "params:crs_latlon"
+            },
+            outputs="outlier_spatial_distribution",
+            name="map_outliers"
+        ),
+        ## POLLUTANT DISTRIBUTION BEFORE/AFTER OUTLIERS REMOVAL
+        node(
+            func=distrubution_comparison,
+            inputs=[
+                "valhalla_map_matched", # original data
+                "cleaned_air_gdf", # cleaned data
+                "params:pollutant"
+            ],
+            outputs="distribution_before_after_outlier_removal",
+            name="compare_distrib"
         )
     ])
-
 
