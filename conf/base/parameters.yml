@@ -6,6 +6,13 @@ timestamp_column: "gps_timestamp"
 latitude_column: "latitude"
 longitude_column: "longitude"
 
+## the following params are used to aggregate data point
+## at different spatial units; one may select the preferred unit(s)
+## among the ones below
+spatial_unit_1_ED: "ED"
+spatial_unit_2_hex: "hex"
+spatial_unit_1_road: "road"
+
 
 ## parameters to process the street network
 ## used in function: OSM_roads

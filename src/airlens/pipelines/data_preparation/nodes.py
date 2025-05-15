@@ -21,6 +21,8 @@ sys.path.append('/home/luisa/Documents/Projects/OSMRoadAssembler/src')
 from process_roads import *
 from .Valhalla_map_matching import process_single_date
 from .spatiotemporal_outlier_detection import temporal_outlier_detection, best_LOF
+from .spatial_aggregation import assign_pt_to_ED, assign_pt_to_hex, assign_point_to_road
+from .spatial_aggregation import sample_per_spatial_unit
 
 '''
 Created on May 3, 2025
@@ -109,7 +111,7 @@ def get_air(air_df: pd.DataFrame,
             end_time: Optional[str],
             latitude_column: str,
             longitude_column: str,
-            CRS: str = "EPSG:4326") -> gpd.GeoDataFrame:
+            crs: str = "EPSG:4326") -> gpd.GeoDataFrame:
     # parse timestamp column
     air_df[timestamp_column] = pd.to_datetime(air_df[timestamp_column], errors='coerce')
     
@@ -124,7 +126,7 @@ def get_air(air_df: pd.DataFrame,
     # to geodataframe
     air_df = air_df.dropna(subset=[latitude_column, longitude_column])
     air_df["geometry"] = [Point(xy) for xy in zip(air_df[longitude_column], air_df[latitude_column])]
-    air_gdf = gpd.GeoDataFrame(air_df, geometry="geometry", crs=CRS)
+    air_gdf = gpd.GeoDataFrame(air_df, geometry="geometry", crs=crs)
     air_gdf.reset_index(drop=True, inplace=True)
 
     return air_gdf
@@ -362,11 +364,11 @@ def outlier_detection(df: gpd.GeoDataFrame,
     ## RETURN OUTLIERS BASED ON METHOD TO JOIN TEMPORAL AND SPATIAL RESULTS
     if join_method == 'union':
         any_ST = list(set(temporal_anomalies) | set(spatial_anomalies))
-        cleaned_df = df[ df['obsID'].isin(any_ST) ].reset_index(drop=True)
+        cleaned_df = df[ ~df['obsID'].isin(any_ST) ].reset_index(drop=True)
 
     if join_method == 'intersection':
         both_ST = list(set(temporal_anomalies) & set(spatial_anomalies))
-        cleaned_df = df[ df['obsID'].isin(both_ST) ].reset_index(drop=True)
+        cleaned_df = df[ ~df['obsID'].isin(both_ST) ].reset_index(drop=True)
         
     else:
         raise ValueError("Invalid join_method: value can be either 'union' or 'intersection'.")
@@ -523,8 +525,62 @@ def distrubution_comparison(original_data: gpd.GeoDataFrame,
 
 
 
-## TODO: put name of all params not reccomended to change starting with underscore
-## For convenience we define all names of parameters that we do not reccomend to change starting with an underscore.
-## (atm only the valhalla parameters - the ones that atm are in all CAPS)
+def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
+                              pollutant_column: str,
+                              spatial_unit: Literal["ed", "hex", "road"] = "hex",
+                              ed_gdf: Optional[gpd.GeoDataFrame] = None,
+                              resolution: Optional[int] = 8,
+                              road_gdf: Optional[gpd.GeoDataFrame] = None,
+                              crs_latlon: Optional[str] = "EPSG:4326",
+                              crs_metric: Optional[str] = "EPSG:3857"):
+    '''
+    Aggregate point observations to the chosen spatial unit.
+    '''
+
+    # ensure parquet is read correctly within kedro
+    pt_gdf['geometry'] = pt_gdf['geometry'].apply(lambda wkb: shapely.wkb.loads(wkb))
+    pt_gdf = gpd.GeoDataFrame(pt_gdf, geometry='geometry', crs=crs_latlon)
+
+    spatial_unit = spatial_unit.lower()
+
+    if spatial_unit == 'ed':
+        if ed_gdf is not None:
+            # get electoral division geometries & assign pts to ED
+            gdf_assigned_to_unit = assign_pt_to_ED(pt_gdf, ed_gdf)
+        else:
+            raise ValueError("No electoral division geometries provided!")
+        
+    elif spatial_unit == 'hex':
+        # create hexagons aggregation according to chosen resolution and assign each obs to an hexagon
+        gdf_assigned_to_unit = assign_pt_to_hex(pt_gdf, resolution)
+
+    elif spatial_unit == 'road':
+        if road_gdf is not None:
+            # to metric system (better for distance computations)
+            pt_gdf = pt_gdf.to_crs(crs_metric)
+            road_gdf = road_gdf.to_crs(pt_gdf.crs)
+
+            # assign point to road in processed OSM street network
+            gdf_assigned_to_unit = assign_point_to_road(pt_gdf, road_gdf)
+
+    else:
+        raise NotImplementedError("Chosen spatial unit not implemented.\nValid values include 'ED' for electoral divisions, 'hex' for aggregation by h3 hexagons, and 'road' for processed OSM roads.")
+
+
+    ## sample distribution plots
+    num_obs_per_unit = sample_per_spatial_unit(gdf_assigned_to_unit, pollutant_column)
+
+    ## aggregate
+    aggr_df = gdf_assigned_to_unit.groupby(['SpatialUnitID', 'geometry']).agg({pollutant_column: ['mean']}).reset_index() 
+    aggr_df.columns = ['SpatialUnitID', 'geometry', pollutant_column]
+    aggr_df = gpd.GeoDataFrame(aggr_df, geometry='geometry', crs=pt_gdf.crs)
+    aggr_df.to_crs(crs_latlon, inplace=True)
+
+    return num_obs_per_unit, aggr_df
+
+
 
 ## TODO: comment input and outputs for all functions
+
+## TODO: make usage of OSMRoadAssembler independent from path
+## currently using sys.path.append('/home/luisa/Documents/Projects/OSMRoadAssembler/src')

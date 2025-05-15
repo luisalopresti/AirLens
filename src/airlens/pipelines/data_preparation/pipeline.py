@@ -5,6 +5,7 @@ from .nodes import run_valhalla_mapmatching
 from .nodes import outlier_detection
 from .nodes import viz_outliers
 from .nodes import distrubution_comparison
+from .nodes import aggregate_to_spatial_unit
 
 
 def create_pipeline(**kwargs):
@@ -79,6 +80,31 @@ def create_pipeline(**kwargs):
             ],
             outputs="distribution_before_after_outlier_removal",
             name="compare_distrib"
+        ),
+        ## AGGREGATE POLLUTANT BY CHOSEN SPATIAL UNIT
+        node(
+            func=aggregate_to_spatial_unit,
+            inputs={
+                "pt_gdf" : "cleaned_air_gdf",
+                "pollutant_column" : "params:pollutant",
+                "spatial_unit" : "params:spatial_unit_1_ED", 
+                "ed_gdf" : "electoral_divisions",
+                "crs_latlon" : "params:crs_latlon"
+            },
+            outputs=["spatial_sampling_plot", "aggregated_air"],
+            name="electoral_div_aggr"
         )
+        ## Can add other nodes below if you want any of the other 2 aggregations:
+        ## ROADS:
+
+        ## HEXAGONS:
     ])
 
+# aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
+#                               pollutant_column: str,
+#                               spatial_unit: Literal["ed", "hex", "road"] = "hex",
+#                               ed_gdf: Optional[gpd.GeoDataFrame] = None,
+#                               resolution: Optional[int] = 8,
+#                               road_gdf: Optional[gpd.GeoDataFrame] = None,
+#                               crs_latlon: Optional[str] = "EPSG:4326",
+#                               crs_metric: Optional[str] = "EPSG:3857"):

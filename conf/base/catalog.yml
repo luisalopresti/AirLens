@@ -16,7 +16,7 @@ valhalla_map_matched:
 
 cleaned_air_gdf:
   type: pandas.ParquetDataset
-  filepath: data/03_primary/cleaned_air.parquet
+  filepath: data/02_intermediate/cleaned_air.parquet
 
 outliers_gdf:
   type: pandas.ParquetDataset
@@ -29,3 +29,18 @@ outlier_spatial_distribution:
 distribution_before_after_outlier_removal:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/distribution_before_after_outlier_removal.png 
+
+electoral_divisions:
+  type: geopandas.GenericDataset
+  filepath: data/01_raw/electoral-divisions_cso2.geojson
+  file_format: file
+
+spatial_sampling_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/spatial_sampling.png 
+  versioned: true
+
+aggregated_air:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/aggr_cleaned_air.parquet
+  versioned: true
