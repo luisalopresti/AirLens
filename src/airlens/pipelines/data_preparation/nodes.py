@@ -180,7 +180,6 @@ def run_valhalla_mapmatching(air_data: gpd.GeoDataFrame,
             # start Docker container
             subprocess.run(start_docker, check=True)
 
-            air_data['geometry'] = air_data['geometry'].apply(lambda wkb: shapely.wkb.loads(wkb))
             air_data = gpd.GeoDataFrame(air_data, geometry='geometry', crs=crs_latlon)
             air_data['date'] = air_data[timestamp_column].dt.date
             unique_dates = air_data['date'].unique()
@@ -296,10 +295,6 @@ def outlier_detection(df: gpd.GeoDataFrame,
         - cleaned_df (gpd.GeoDataFrame): geodataframe containing data cleaned from outliers
         - df_outliers (gpd.GeoDataFrame): geodataframe containing outliers only (under spatial, temporal or both dimensions)
     """
-    
-    # ensure parquet is read correctly within kedro
-    df['geometry'] = df['geometry'].apply(lambda wkb: shapely.wkb.loads(wkb))
-    df = gpd.GeoDataFrame(df, geometry='geometry', crs=crs_latlon)
 
     ## MASK NEGATIVE VALUES (SENSOR ERRORs)
     mask = df[df[pollutant_column] <= 0.].index
@@ -386,10 +381,6 @@ def viz_outliers(df_outliers: gpd.GeoDataFrame,
     accoding to temporal dimension, spatial dimension, and the intersection of the two.
     '''
     sns.set(style="whitegrid")
-
-    # ensure parquet is read correctly within kedro
-    df_outliers['geometry'] = df_outliers['geometry'].apply(lambda wkb: shapely.wkb.loads(wkb))
-    df_outliers = gpd.GeoDataFrame(df_outliers, geometry='geometry', crs=crs_latlon)
 
     # get outliers for each dimension
     outlier_filters = {
@@ -537,10 +528,6 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
     Aggregate point observations to the chosen spatial unit.
     '''
 
-    # ensure parquet is read correctly within kedro
-    pt_gdf['geometry'] = pt_gdf['geometry'].apply(lambda wkb: shapely.wkb.loads(wkb))
-    pt_gdf = gpd.GeoDataFrame(pt_gdf, geometry='geometry', crs=crs_latlon)
-
     spatial_unit = spatial_unit.lower()
 
     if spatial_unit == 'ed':
@@ -584,3 +571,5 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
 
 ## TODO: make usage of OSMRoadAssembler independent from path
 ## currently using sys.path.append('/home/luisa/Documents/Projects/OSMRoadAssembler/src')
+
+## TODO: CHANGE CATALOG FROM PANDAS.PARQUET TO GEOPANDAS.GENERICDATASET WITH PARQUET TYPE
