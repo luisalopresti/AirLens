@@ -11,7 +11,7 @@ longitude_column: "longitude"
 ## among the ones below
 spatial_unit_1_ED: "ED"
 spatial_unit_2_hex: "hex"
-spatial_unit_1_road: "road"
+spatial_unit_3_road: "road"
 
 
 ## parameters to process the street network

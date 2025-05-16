@@ -1,26 +1,31 @@
 OSM_road_net:
-  type: pandas.ParquetDataset
+  type: geopandas.GenericDataset
   filepath: data/03_primary/OSM_road_net.parquet
+  file_format: parquet
 
 raw_air_data:
   type: pandas.CSVDataset
   filepath: data/01_raw/AirView_DublinCity_Measurements_ugm3.csv
 
 filtered_raw_air_data:
-  type: pandas.ParquetDataset
+  type: geopandas.GenericDataset
   filepath: data/02_intermediate/AirView_filtered.parquet
+  file_format: parquet
 
 valhalla_map_matched:
-  type: pandas.ParquetDataset
+  type: geopandas.GenericDataset
   filepath: data/02_intermediate/AirView_mapmatched.parquet
+  file_format: parquet
 
 cleaned_air_gdf:
-  type: pandas.ParquetDataset
+  type: geopandas.GenericDataset
   filepath: data/02_intermediate/cleaned_air.parquet
+  file_format: parquet
 
 outliers_gdf:
-  type: pandas.ParquetDataset
+  type: geopandas.GenericDataset
   filepath: data/02_intermediate/outliers.parquet
+  file_format: parquet
 
 outlier_spatial_distribution:
   type: matplotlib.MatplotlibWriter
@@ -35,12 +40,13 @@ electoral_divisions:
   filepath: data/01_raw/electoral-divisions_cso2.geojson
   file_format: file
 
-spatial_sampling_plot:
+ED_spatial_sampling_plot:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/spatial_sampling.png 
   versioned: true
 
-aggregated_air:
-  type: pandas.ParquetDataset
+ED_aggregated_air:
+  type: geopandas.GenericDataset
   filepath: data/03_primary/aggr_cleaned_air.parquet
+  file_format: parquet
   versioned: true
