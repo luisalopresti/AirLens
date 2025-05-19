@@ -94,36 +94,33 @@ def create_pipeline(**kwargs):
             outputs=["ED_spatial_sampling_plot", "ED_aggregated_air"],
             name="electoral_div_aggr"
         ),
-        ## Can add other nodes below if you want any of the other 2 aggregations:
-        ## ROADS:
-        
-        # node(
-        #     func=aggregate_to_spatial_unit,
-        #     inputs={
-        #         "pt_gdf" : "cleaned_air_gdf",
-        #         "pollutant_column" : "params:pollutant",
-        #         "spatial_unit" : "params:spatial_unit_3_road", 
-        #         "road_gdf" : "OSM_road_net",
-        #         "crs_latlon" : "params:crs_latlon",
-        #         "crs_metric" : "params:crs_metric"
-        #     },
-        #     outputs=["road_sampling_plot", "road_aggregated_air"], # NOTE: fictitious names not in catalog (just examples)
-        #     name="road_aggr"
-        # ),
-        
-        # ## HEXAGONS:
-        
-        # node(
-        #     func=aggregate_to_spatial_unit,
-        #     inputs={
-        #         "pt_gdf" : "cleaned_air_gdf",
-        #         "pollutant_column" : "params:pollutant",
-        #         "spatial_unit" : "params:spatial_unit_2_hex", 
-        #         # "resolution" default value 8
-        #         "crs_latlon" : "params:crs_latlon"
-        #     },
-        #     outputs=["hex_sampling_plot", "hex_aggregated_air"], # NOTE: fictitious names not in catalog (just examples)
-        #     name="hex_aggr"
-        # ),
-        
+        ## Can use the same function to add other nodes 
+        ## using different aggregation units:        
+        ## HEXAGONS:
+        node(
+            func=aggregate_to_spatial_unit,
+            inputs={
+                "pt_gdf" : "cleaned_air_gdf",
+                "pollutant_column" : "params:pollutant",
+                "spatial_unit" : "params:spatial_unit_2_hex", 
+                # "resolution" default value 8
+                "crs_latlon" : "params:crs_latlon"
+            },
+            outputs=["hex_sampling_plot", "hex_aggregated_air"],
+            name="hex_aggr"
+        ),
+        ## ROADS (computationally more expensive but optimized):
+        node(
+            func=aggregate_to_spatial_unit,
+            inputs={
+                "pt_gdf" : "cleaned_air_gdf",
+                "pollutant_column" : "params:pollutant",
+                "spatial_unit" : "params:spatial_unit_3_road", 
+                "road_gdf" : "OSM_road_net",
+                "crs_latlon" : "params:crs_latlon",
+                "crs_metric" : "params:crs_metric"
+            },
+            outputs=["road_sampling_plot", "road_aggregated_air"], 
+            name="road_aggr"
+        )
     ])

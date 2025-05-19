@@ -46,12 +46,34 @@ electoral_divisions:
 
 ED_spatial_sampling_plot:
   type: matplotlib.MatplotlibWriter
-  filepath: data/08_reporting/spatial_sampling.png 
+  filepath: data/08_reporting/ED_spatial_sampling.png 
   versioned: true
 
 ED_aggregated_air:
   type: geopandas.GenericDataset
-  filepath: data/03_primary/aggr_cleaned_air.parquet
+  filepath: data/03_primary/ED_aggr_cleaned_air.parquet
+  file_format: parquet
+  versioned: true
+
+hex_sampling_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/hex_spatial_sampling.png 
+  versioned: true
+
+hex_aggregated_air:
+  type: geopandas.GenericDataset
+  filepath: data/03_primary/hex_aggr_cleaned_air.parquet
+  file_format: parquet
+  versioned: true
+
+road_sampling_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/road_spatial_sampling.png 
+  versioned: true
+
+road_aggregated_air:
+  type: geopandas.GenericDataset
+  filepath: data/03_primary/road_aggr_cleaned_air.parquet
   file_format: parquet
   versioned: true
 
@@ -63,15 +85,19 @@ ED_aggregated_air:
 concentration_plot:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/concentration.png 
+  versioned: true
 
 scatter_lisa_plot:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/scatter_lisa_plot.png 
+  versioned: true
 
 local_morans_maps:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/local_morans_maps.png
+  versioned: true
 
 lisa_summary:
   type: text.TextDataset
   filepath: data/08_reporting/lisa_summary.txt
+  versioned: true

@@ -9,7 +9,7 @@ def create_pipeline(**kwargs):
         node(
             func=viz_pollutant,
             inputs=[
-                "ED_aggregated_air",
+                "hex_aggregated_air", # alternative aggregated datasets: ED_aggregated_air, road_aggregated_air
                 "params:pollutant"
                 ],
             outputs="concentration_plot",
@@ -19,7 +19,7 @@ def create_pipeline(**kwargs):
         node(
             func=hotspot_analysis,
             inputs=[
-                "ED_aggregated_air",
+                "hex_aggregated_air", # alternative aggregated datasets: ED_aggregated_air, road_aggregated_air
                 "params:pollutant",
                 "params:crs_metric"
             ],

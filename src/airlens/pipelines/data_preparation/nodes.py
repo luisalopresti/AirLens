@@ -572,6 +572,13 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
     aggr_df = gpd.GeoDataFrame(aggr_df, geometry='geometry', crs=pt_gdf.crs)
     aggr_df.to_crs(crs_latlon, inplace=True)
 
+    if aggr_df[pollutant_column].isna().any():
+        warnings.warn(
+            f"Please note that {len(aggr_df[aggr_df[pollutant_column].isna()==True])} spatial units have been dropped due to NaN values in {pollutant_column}.",
+            UserWarning)
+        aggr_df.dropna(subset=[pollutant_column], inplace=True)
+        aggr_df.reset_index(inplace=True)
+
     return num_obs_per_unit, aggr_df
 
 
