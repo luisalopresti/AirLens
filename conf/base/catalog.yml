@@ -101,3 +101,13 @@ lisa_summary:
   type: text.TextDataset
   filepath: data/08_reporting/lisa_summary.txt
   versioned: true
+
+
+# -----------------------------------------------------
+#               Temporal Pattern Pipeline
+# -----------------------------------------------------
+
+plot_temporal_pattern:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/plot_temporal_pattern.png 
+  versioned: true
