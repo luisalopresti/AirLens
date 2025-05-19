@@ -29,20 +29,29 @@ Created on May 3, 2025
 
 @author: Luisa Lo Presti
 
-`nodes.py` contains the actual analysis functions, to be incorporated in the pipeline.
+`data_preparation/nodes.py` contains the data processing functions, incorporated in the data_preparation pipeline.
 
 The following functions are found below:
 
 1. OSM_roads -> provides a compact street network representation by processing OpenStreetMap data; 
 the algorithm is based on the "named-road" principle and on human cognitive understanding of roads.
 
-2. get_air: ensure geometries and timestamps are on suitable format and (optionally) filter the data
+2. get_air -> ensure geometries and timestamps are on suitable format and (optionally) filter the data
 according to the desired time period.
 
-3. run_valhalla_mapmatching: performs map-matching of GPS coordinates derived from a single vehicle's
+3. run_valhalla_mapmatching -> performs map-matching of GPS coordinates derived from a single vehicle's
 trajectory using Valhalla Docker image.
 
-4. outlier_detection: combines spatial and temporal methods to detect outliers along these two dimensions.
+4. outlier_detection -> combines spatial and temporal methods to detect outliers along these two dimensions.
+
+5. viz_outliers -> visualize outliers spatial distribution.
+
+6. distribution_comparison -> compare distribution pollutant before and after outlier removal.
+
+7. aggregate_to_spatial_unit -> aggregate hyperlocal observation to chosen spatial unit; options involve 
+customizable geometries (passed as a geodataframe, referred to as ED - electoral division, but may be
+any similar polygon geometries), hexagons (obtained using h3 library, at passed resolution), and 
+road (geometries obtained from processed OSM street network).
 '''
 
 
@@ -439,7 +448,7 @@ def viz_outliers(df_outliers: gpd.GeoDataFrame,
 
 
 
-def distrubution_comparison(original_data: gpd.GeoDataFrame,
+def distribution_comparison(original_data: gpd.GeoDataFrame,
                             cleaned_data: gpd.GeoDataFrame, 
                             pollutant_column: str):
     '''Plot of pollutant distribution before and after outleir removal'''
@@ -572,4 +581,4 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
 ## TODO: make usage of OSMRoadAssembler independent from path
 ## currently using sys.path.append('/home/luisa/Documents/Projects/OSMRoadAssembler/src')
 
-## TODO: CHANGE CATALOG FROM PANDAS.PARQUET TO GEOPANDAS.GENERICDATASET WITH PARQUET TYPE
+## TODO: plots should return fig not plt

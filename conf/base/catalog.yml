@@ -1,3 +1,7 @@
+# -----------------------------------------------------
+#               Data Preparation Pipeline
+# -----------------------------------------------------
+
 OSM_road_net:
   type: geopandas.GenericDataset
   filepath: data/03_primary/OSM_road_net.parquet
@@ -50,3 +54,24 @@ ED_aggregated_air:
   filepath: data/03_primary/aggr_cleaned_air.parquet
   file_format: parquet
   versioned: true
+
+
+# -----------------------------------------------------
+#               Hotspot Analysis Pipeline
+# -----------------------------------------------------
+
+concentration_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/concentration.png 
+
+scatter_lisa_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/scatter_lisa_plot.png 
+
+local_morans_maps:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/local_morans_maps.png
+
+lisa_summary:
+  type: text.TextDataset
+  filepath: data/08_reporting/lisa_summary.txt

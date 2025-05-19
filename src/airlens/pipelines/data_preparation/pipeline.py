@@ -4,7 +4,7 @@ from .nodes import get_air
 from .nodes import run_valhalla_mapmatching
 from .nodes import outlier_detection
 from .nodes import viz_outliers
-from .nodes import distrubution_comparison
+from .nodes import distribution_comparison
 from .nodes import aggregate_to_spatial_unit
 
 
@@ -72,7 +72,7 @@ def create_pipeline(**kwargs):
         ),
         ## POLLUTANT DISTRIBUTION BEFORE/AFTER OUTLIERS REMOVAL
         node(
-            func=distrubution_comparison,
+            func=distribution_comparison,
             inputs=[
                 "valhalla_map_matched", # original data
                 "cleaned_air_gdf", # cleaned data
