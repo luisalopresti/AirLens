@@ -527,6 +527,7 @@ def distribution_comparison(original_data: gpd.GeoDataFrame,
 
 def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
                               pollutant_column: str,
+                              timestamp_column: str,
                               spatial_unit: Literal["ed", "hex", "road"] = "hex",
                               ed_gdf: Optional[gpd.GeoDataFrame] = None,
                               resolution: Optional[int] = 8,
@@ -567,7 +568,14 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
     num_obs_per_unit = sample_per_spatial_unit(gdf_assigned_to_unit, pollutant_column)
 
     ## aggregate
-    aggr_df = gdf_assigned_to_unit.groupby(['SpatialUnitID', 'geometry']).agg({pollutant_column: ['mean']}).reset_index() 
+    ## obtain typical daily average per spatial unit via two-step aggregation
+    # 1. aggregate by day-location (average pollutant per day per spatial unit)
+    gdf_assigned_to_unit[timestamp_column] = pd.to_datetime(gdf_assigned_to_unit[timestamp_column])
+    gdf_assigned_to_unit['day'] = gdf_assigned_to_unit[timestamp_column].dt.date
+    aggr_day_df = gdf_assigned_to_unit.groupby(['SpatialUnitID', 'geometry', 'day']).agg({pollutant_column: ['mean']}).reset_index() 
+    aggr_day_df.columns = ['SpatialUnitID', 'geometry', 'day', pollutant_column]
+    # 2. aggregate by location (typical daily average per spatial unit)
+    aggr_df = aggr_day_df.groupby(['SpatialUnitID', 'geometry']).agg({pollutant_column: ['mean']}).reset_index()
     aggr_df.columns = ['SpatialUnitID', 'geometry', pollutant_column]
     aggr_df = gpd.GeoDataFrame(aggr_df, geometry='geometry', crs=pt_gdf.crs)
     aggr_df.to_crs(crs_latlon, inplace=True)

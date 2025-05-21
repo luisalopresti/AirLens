@@ -87,6 +87,7 @@ def create_pipeline(**kwargs):
             inputs={
                 "pt_gdf" : "cleaned_air_gdf",
                 "pollutant_column" : "params:pollutant",
+                "timestamp_column" : "params:timestamp_column",
                 "spatial_unit" : "params:spatial_unit_1_ED", 
                 "ed_gdf" : "electoral_divisions",
                 "crs_latlon" : "params:crs_latlon"
@@ -102,6 +103,7 @@ def create_pipeline(**kwargs):
             inputs={
                 "pt_gdf" : "cleaned_air_gdf",
                 "pollutant_column" : "params:pollutant",
+                "timestamp_column": "params:timestamp_column",
                 "spatial_unit" : "params:spatial_unit_2_hex", 
                 # "resolution" default value 8
                 "crs_latlon" : "params:crs_latlon"
@@ -115,6 +117,7 @@ def create_pipeline(**kwargs):
             inputs={
                 "pt_gdf" : "cleaned_air_gdf",
                 "pollutant_column" : "params:pollutant",
+                "timestamp_column" : "params:timestamp_column",
                 "spatial_unit" : "params:spatial_unit_3_road", 
                 "road_gdf" : "OSM_road_net",
                 "crs_latlon" : "params:crs_latlon",
