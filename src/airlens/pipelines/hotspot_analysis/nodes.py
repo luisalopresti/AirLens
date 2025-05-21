@@ -39,7 +39,7 @@ def viz_pollutant(gdf: gpd.GeoDataFrame,
 
     gdf.plot(
         column=pollutant_column,
-        cmap='viridis',
+        cmap='OrRd',
         scheme='quantiles',
         k=5,
         edgecolor=None,
@@ -55,6 +55,7 @@ def viz_pollutant(gdf: gpd.GeoDataFrame,
         ax,
         crs=gdf.crs,
         source=ctx.providers.CartoDB.VoyagerNoLabels,
+        # source=ctx.providers.CartoDB.Positron
     )
 
     ax.set_axis_off()
