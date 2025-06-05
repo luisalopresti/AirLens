@@ -116,10 +116,10 @@ def OSM_roads(place_name: str,
 
 def get_air(air_df: pd.DataFrame,
             timestamp_column: str,
-            start_time: Optional[str],
-            end_time: Optional[str],
             latitude_column: str,
             longitude_column: str,
+            start_time: Optional[str] = None,
+            end_time: Optional[str] = None,
             crs: str = "EPSG:4326") -> gpd.GeoDataFrame:
     # parse timestamp column
     air_df[timestamp_column] = pd.to_datetime(air_df[timestamp_column], errors='coerce')

@@ -27,10 +27,10 @@ def create_pipeline(**kwargs):
             func=get_air,
             inputs=["raw_air_data",
                     "params:timestamp_column",
-                    "params:start_time",
-                    "params:end_time",
                     "params:latitude_column",
                     "params:longitude_column",
+                    "params:start_time",
+                    "params:end_time",
                     "params:crs_latlon"],
             outputs="filtered_raw_air_data",
             name="filtered_raw_air"

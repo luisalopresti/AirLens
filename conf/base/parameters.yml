@@ -54,3 +54,29 @@ valhalla_docker_img: "gisops_docker_valhalla_1"
 MAX_POINTS: 16000
 MIN_POINTS: 10
 MINUTES_TIME_GAP: 5
+
+
+## ----------------------------------------------------------
+##   All the below parameters refers to covariates data
+## ----------------------------------------------------------
+
+# optional params:
+# they refer to the period of data collection of
+# AIR data, and they are used to match the temporal dimension
+# of the covariates (filtering):
+weekdays_only: True # whether air data were collected only on weekdays (bool)
+start_hour: 9 # hour of beginning of data collection (included)
+end_hour: 17 # hour of end of data collection (excluded)
+
+
+## TRAFFIC DATA: 
+## used in traffic_pipeline
+# needed column names and format
+traffic_timestamp_col: "End_Time"
+traffic_timestamp_format: "%Y%m%d%H%M%S" 
+traffic_count_col: "Sum_Volume"
+traffic_sites_ID: "Site"
+
+# site ID column of file containing traffic site GEOMETRIES
+# (if geometries are in a separate file, else use traffic_sites_ID again):
+traffic_ID_locationfile: "SiteID" 

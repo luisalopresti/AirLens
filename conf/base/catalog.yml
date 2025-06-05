@@ -111,3 +111,39 @@ plot_temporal_pattern:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/plot_temporal_pattern.png 
   versioned: true
+
+
+# -----------------------------------------------------
+#                    Traffic Pipeline
+# -----------------------------------------------------
+
+raw_traffic_data:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/SCATS_traffic_count_Dublin.csv
+
+traffic_site_location:
+  type: geopandas.GenericDataset
+  filepath: data/01_raw/SCATS_sites.geojson
+  file_format: file
+
+avg_traffic_count_per_site:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/avg_traffic_count_per_site.csv
+
+geo_avg_traffic_count_per_site:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/geo_avg_traffic_count_per_site.parquet
+  file_format: parquet
+
+map_traffic_by_site:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/map_traffic_by_site.png 
+
+spatialunit_aggr_traffic:
+  type: geopandas.GenericDataset
+  filepath: data/03_primary/ED_traffic.parquet
+  file_format: parquet
+
+map_pollutant_traffic:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/map_pollutant_traffic.png 
