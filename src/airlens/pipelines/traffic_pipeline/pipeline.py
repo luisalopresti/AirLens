@@ -51,14 +51,14 @@ def create_pipeline(**kwargs):
                 "site_avg_traffic_gdf":"geo_avg_traffic_count_per_site",
                 "crs_metric":"params:crs_metric"
             },
-            outputs="spatialunit_aggr_traffic",
+            outputs="air_traffic_gdf",
             name="aggr_traffic"
         ),
         ## MAP OF POLLUTANT AND TRAFFIC 
         node(
             func=viz_traffic_and_pollutant,
             inputs={
-                    "air_traffic_gdf":"spatialunit_aggr_traffic",
+                    "air_traffic_gdf":"air_traffic_gdf",
                     "pollutant_column":"params:pollutant"
             },
             outputs="map_pollutant_traffic",
