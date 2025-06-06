@@ -139,7 +139,7 @@ map_traffic_by_site:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/map_traffic_by_site.png 
 
-spatialunit_aggr_traffic:
+air_traffic_gdf:
   type: geopandas.GenericDataset
   filepath: data/03_primary/ED_traffic.parquet
   file_format: parquet
@@ -147,3 +147,39 @@ spatialunit_aggr_traffic:
 map_pollutant_traffic:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/map_pollutant_traffic.png 
+
+
+# -----------------------------------------------------
+#                    Buildings Pipeline
+# -----------------------------------------------------
+
+tif_copernicus_building_height:
+  type: kedro_datasets_experimental.rioxarray.GeoTIFFDataset
+  filepath: data/01_raw/Buildings_Heights_Copernicus_Urban_Atlas/IE001_DUBLIN_UA2012_DHM_V020.tif
+  load_args:
+    masked: true
+
+building_gdf:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/buildings.parquet
+  file_format: parquet
+
+building_gdf_clipped:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/buildings_clip.parquet
+  file_format: parquet
+
+building_morphology_gdf:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/building_morphology_gdf.parquet
+  file_format: parquet
+
+air_build_morph_gdf:
+  type: geopandas.GenericDataset
+  filepath: data/03_primary/air_build_morph_gdf.parquet
+  file_format: parquet
+
+
+# -----------------------------------------------------
+#                    Streets Pipeline
+# -----------------------------------------------------
