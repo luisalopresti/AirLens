@@ -183,3 +183,22 @@ air_build_morph_gdf:
 # -----------------------------------------------------
 #                    Streets Pipeline
 # -----------------------------------------------------
+
+len_street_class_per_unit:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/len_street_class_per_unit.csv
+
+norm_len_street_class_per_unit:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/normalized_len_street_class_per_unit.parquet
+  file_format: parquet
+
+air_road_morph_gdf:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/air_road_morph_gdf.parquet
+  file_format: parquet
+
+air_road_gdf:
+  type: geopandas.GenericDataset
+  filepath: data/03_primary/air_road_gdf.parquet
+  file_format: parquet
