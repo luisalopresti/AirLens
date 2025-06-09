@@ -2,10 +2,50 @@ import geopandas as gpd
 import pandas as pd
 from typing import Optional, List
 
-from .streets_utils import download_osm_street_data, classify_streets_binary, clip_geometries_within
+from .streets_utils import download_osm_street_data, classify_streets_binary
 from .topography_indicators import street_extension
 from .topography_indicators import compute_meshedness_per_region
 from .topography_indicators import street_connectivity
+
+
+
+def clip_geometries_within(gdf_to_clip, gdf_mask, mask_id_col='SpatialUnitID'):
+    ''' 
+    Clips geometries from gdf_to_clip so that each feature is entirely contained 
+    within a single polygon from gdf_mask. 
+    Add gdf_mask unique identifier (Spatial Unit ID) to the clipped dataframe.
+
+    Parameters:
+        - gdf_to_clip (GeoDataFrame): GeoDataFrame containing geometries to clip.
+        - gdf_mask (GeoDataFrame): GeoDataFrame with polygon geometries to clip within.
+        - mask_id_col (str): name of the column in gdf_mask to attach as an ID.
+
+    Returns:
+        - GeoDataFrame: new GeoDataFrame with clipped geometries
+                        and a new ID column, containing IDs of the Spatial Unit
+                        they belong to.
+    '''
+    gdf_to_clip = gdf_to_clip.to_crs(gdf_mask.crs)
+
+    clipped_segments = []
+
+    # loop over polygons to get geoms fully contained in each polygon
+    # (don't lose any part of the geometry across all polygons; 
+    # geoms just get split into parts, each associated with the polygon it overlaps with)
+    for _, polygon_row in gdf_mask.iterrows():
+        # clip the roads to the polygon geometry
+        clipped = gpd.clip(gdf_to_clip, polygon_row.geometry)
+        if not clipped.empty:
+            # add the polygon's index or id to clipped segments for join
+            clipped = clipped.copy()
+            clipped[mask_id_col] = polygon_row[mask_id_col]
+            clipped_segments.append(clipped)
+
+    if clipped_segments:
+        return gpd.GeoDataFrame(pd.concat(clipped_segments, ignore_index=True), crs=gdf_to_clip.crs)
+    else:
+        raise ValueError("No geometry in `gdf_to_clip` intersect the polygons in `gdf_mask`.")
+    
 
 
 def get_road_class_len_per_spatialunit(place_name: str,
@@ -94,8 +134,10 @@ def normalize_len_by_area(air_gdf: gpd.GeoDataFrame,
 def street_indicators(street_gdf: gpd.GeoDataFrame,
                       air_gdf: gpd.GeoDataFrame,
                       crs_metric: Optional[str] = "EPSG:3857"):
-    # clip streets so that they are containing in a unique unit & assign SpatialUnitID
-    clip_street_gdf = clip_geometries_within(street_gdf, air_gdf)
+    
+    # street_gdf -> clipped streets so that they are containing in a unique unit & assign SpatialUnitID
+    # from clip_street_gdf = clip_geometries_within(street_gdf, air_gdf)
+    clip_street_gdf = street_gdf.copy()
 
     # compute tot road len per unit
     clip_street_gdf.to_crs(crs_metric, inplace=True)

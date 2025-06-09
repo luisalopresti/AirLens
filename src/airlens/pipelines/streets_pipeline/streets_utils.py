@@ -83,41 +83,4 @@ def classify_streets_binary(street_gdf, major_road_types=None):
 
 
 
-def clip_geometries_within(gdf_to_clip, gdf_mask, mask_id_col='SpatialUnitID'):
-    ''' 
-    Clips geometries from gdf_to_clip so that each feature is entirely contained 
-    within a single polygon from gdf_mask. 
-    Add gdf_mask unique identifier (Spatial Unit ID) to the clipped dataframe.
-
-    Parameters:
-        - gdf_to_clip (GeoDataFrame): GeoDataFrame containing geometries to clip.
-        - gdf_mask (GeoDataFrame): GeoDataFrame with polygon geometries to clip within.
-        - mask_id_col (str): name of the column in gdf_mask to attach as an ID.
-
-    Returns:
-        - GeoDataFrame: new GeoDataFrame with clipped geometries
-                        and a new ID column, containing IDs of the Spatial Unit
-                        they belong to.
-    '''
-    gdf_to_clip = gdf_to_clip.to_crs(gdf_mask.crs)
-
-    clipped_segments = []
-
-    # loop over polygons to get geoms fully contained in each polygon
-    # (don't lose any part of the geometry across all polygons; 
-    # geoms just get split into parts, each associated with the polygon it overlaps with)
-    for _, polygon_row in gdf_mask.iterrows():
-        # clip the roads to the polygon geometry
-        clipped = gpd.clip(gdf_to_clip, polygon_row.geometry)
-        if not clipped.empty:
-            # add the polygon's index or id to clipped segments for join
-            clipped = clipped.copy()
-            clipped[mask_id_col] = polygon_row[mask_id_col]
-            clipped_segments.append(clipped)
-
-    if clipped_segments:
-        return gpd.GeoDataFrame(pd.concat(clipped_segments, ignore_index=True), crs=gdf_to_clip.crs)
-    else:
-        raise ValueError("No geometry in `gdf_to_clip` intersect the polygons in `gdf_mask`.")
-    
 

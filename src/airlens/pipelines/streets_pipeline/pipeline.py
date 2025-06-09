@@ -1,6 +1,7 @@
 from kedro.pipeline import Pipeline, node
 from .nodes import get_road_class_len_per_spatialunit
 from .nodes import normalize_len_by_area
+from .nodes import clip_geometries_within
 from .nodes import street_indicators
 from .nodes import merge_indicators_and_class
 
@@ -28,11 +29,21 @@ def create_pipeline(**kwargs):
             outputs="norm_len_street_class_per_unit",
             name="norm_streetclass_len"
         ),
+        ## CLIP ROADS to be contained into a single Spatial Unit
+        node(
+            func=clip_geometries_within,
+            inputs={
+                "gdf_to_clip":"OSM_road_net", 
+                "gdf_mask":"ED_aggregated_air"
+            },
+            outputs="clip_street",
+            name="clip_street"
+        ),
         ## COMPUTE MORPHOLOGY METRICS FROM PROCESSED NETWORK
         node(
             func=street_indicators,
             inputs={
-                "street_gdf":"OSM_road_net",
+                "street_gdf":"clip_street",
                 "air_gdf":"ED_aggregated_air",
                 "crs_metric":"params:crs_metric"
             },
