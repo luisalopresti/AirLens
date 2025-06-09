@@ -4,7 +4,8 @@ from .nodes import compute_street_profile
 def create_pipeline(**kwargs):
     return Pipeline([
         ## COMPUTE AVG STREET PROFILE CHARACHTERISTICS
-        ## PER SPATIAL UNIT
+        ## PER SPATIAL UNIT 
+        # (interactions between streets and buildings morphology)
         node(
             func=compute_street_profile,
             inputs={
