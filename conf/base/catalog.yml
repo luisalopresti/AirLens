@@ -209,7 +209,10 @@ air_road_gdf:
   file_format: parquet
 
 
-## STREET PROFILE
+# -----------------------------------------------------
+#     Street Profile (Street-Building interaction)
+# -----------------------------------------------------
+
 unit_street_profile:
   type: pandas.CSVDataset
   filepath: data/02_intermediate/street_profile.csv
@@ -218,3 +221,38 @@ unit_street_profile:
 # -----------------------------------------------------
 #                    Green: Trees
 # -----------------------------------------------------
+
+urban_atlas_street_trees:
+  type: geopandas.GenericDataset
+  filepath: data/01_raw/Urban_Atlas_Tree_layer.gpkg
+  file_format: file
+
+trees_in_units:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/trees_in_units.parquet
+  file_format: parquet
+
+air_trees_features:
+  type: geopandas.GenericDataset
+  filepath: data/03_primary/air_trees_features.parquet
+  file_format: parquet
+
+
+# -----------------------------------------------------
+#                  Urban Land Use
+# -----------------------------------------------------
+
+urban_atlas_landuse:
+  type: geopandas.GenericDataset
+  filepath: data/01_raw/Urban_Atlas_LandUse.gpkg
+  file_format: file
+
+landuse_to_unit:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/landuse_to_unit.parquet
+  file_format: parquet
+
+landuse_perc_per_unit:
+  type: geopandas.GenericDataset
+  filepath: data/03_primary/landuse_perc_per_unit.parquet
+  file_format: parquet
