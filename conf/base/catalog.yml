@@ -193,6 +193,11 @@ norm_len_street_class_per_unit:
   filepath: data/02_intermediate/normalized_len_street_class_per_unit.parquet
   file_format: parquet
 
+clip_street:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/clip_street.parquet
+  file_format: parquet
+
 air_road_morph_gdf:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/air_road_morph_gdf.parquet
@@ -202,3 +207,14 @@ air_road_gdf:
   type: geopandas.GenericDataset
   filepath: data/03_primary/air_road_gdf.parquet
   file_format: parquet
+
+
+## STREET PROFILE
+unit_street_profile:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/street_profile.csv
+
+
+# -----------------------------------------------------
+#                    Green: Trees
+# -----------------------------------------------------
