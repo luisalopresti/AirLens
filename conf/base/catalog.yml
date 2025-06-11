@@ -256,3 +256,31 @@ landuse_perc_per_unit:
   type: geopandas.GenericDataset
   filepath: data/03_primary/landuse_perc_per_unit.parquet
   file_format: parquet
+
+
+# -----------------------------------------------------
+#                  Air & Covariates
+# -----------------------------------------------------
+
+merged_covs_air:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/merged_covs_air.parquet
+  file_format: parquet
+
+filtered_covs_air:
+  type: geopandas.GenericDataset
+  filepath: data/02_intermediate/filtered_covs_air.parquet
+  file_format: parquet
+
+plot_corr_matrix:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/corr_mat.png 
+
+plot_hists:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/plot_hists.png 
+
+modelling_gdf:
+  type: geopandas.GenericDataset
+  filepath: data/05_model_input/air_covariates_VIFcleaned.parquet
+  file_format: parquet
