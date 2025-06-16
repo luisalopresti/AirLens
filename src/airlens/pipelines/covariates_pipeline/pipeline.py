@@ -4,6 +4,7 @@ from .nodes import covariates_filtering
 from .nodes import plot_correlation_matrix
 from .nodes import plot_variable_distributions
 from .nodes import reduce_multicollinearity
+from .nodes import plot_covariates_maps
 
 def create_pipeline(**kwargs):
     return Pipeline([
@@ -62,9 +63,15 @@ def create_pipeline(**kwargs):
             },
             outputs="modelling_gdf",
             name="vif"
+        ),
+        ## PLOT MAPS OF ALL FINAL COVARIATES & TARGET
+        node(
+            func=plot_covariates_maps,
+            inputs={
+                "air_gdf":"modelling_gdf",
+                "pollutant_column":"params:pollutant"
+            },
+            outputs="maps_covariates",
+            name="maps_covariates"
         )
     ])
-
-
-
-

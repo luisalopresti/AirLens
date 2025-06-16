@@ -12,7 +12,8 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.tools.tools import add_constant
 from matplotlib.figure import Figure
 
-from .variable_names_dict import variables_shortnames_dict
+from ..viz_utils import variables_shortnames_dict
+
 
 def combine_covariates(air_gdf: gpd.GeoDataFrame,
                         traffic_gdf: Optional[gpd.GeoDataFrame] = None,
@@ -279,3 +280,54 @@ def reduce_multicollinearity(df: gpd.GeoDataFrame,
         variables = variables.drop(columns='const')
 
     return df[fixed_elements + variables.columns.to_list()]
+
+
+def plot_covariates_maps(air_gdf: gpd.GeoDataFrame,
+                         pollutant_column: str,
+                         maps_per_row: int = 2,
+                         figsize: tuple = (20,20)) -> Figure:
+    # get cleaned variable names for plot
+    short_names = variables_shortnames_dict()
+    air_gdf = air_gdf.rename(columns=short_names)
+
+    # plot covariates and target (ensure target first)
+    predictors = list(air_gdf.columns.drop(['SpatialUnitID', 'geometry', pollutant_column]))
+    columns_to_plot = [pollutant_column] + predictors
+
+    # layout
+    n_vars = len(columns_to_plot)
+    n_rows = ceil(n_vars / maps_per_row)
+
+    fig, axes = plt.subplots(
+        nrows=n_rows,
+        ncols=maps_per_row,
+        figsize=figsize)
+    
+    axes = axes.flatten()
+
+    for i, col in enumerate(columns_to_plot):
+        air_gdf.plot(
+            column=col,
+            cmap='coolwarm',
+            linewidth=0.05,
+            scheme='FisherJenks',
+            k=6,
+            ax=axes[i],
+            legend=True,
+            legend_kwds={
+                'bbox_to_anchor': (1.05, 1),
+                'loc': 'upper left',
+                'fontsize': 9,
+                'title': col,
+                'title_fontsize': 10
+            }
+        )
+        axes[i].set_title(col, fontsize=13)
+        axes[i].axis('off')
+
+    # hide unused subplots
+    for j in range(len(columns_to_plot), len(axes)):
+        axes[j].axis('off')
+
+    plt.tight_layout()
+    return fig
