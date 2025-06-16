@@ -9,6 +9,7 @@ from airlens.pipelines.morphology_profile_pipeline import pipeline as morphology
 from airlens.pipelines.urban_trees_pipeline import pipeline as urban_trees_pipeline
 from airlens.pipelines.urban_landuse_pipeline import pipeline as urban_landuse_pipeline
 from airlens.pipelines.covariates_pipeline import pipeline as covariates_pipeline
+from airlens.pipelines.modelling_pipeline import pipeline as modelling_pipeline
 
 
 def register_pipelines() -> dict[str, Pipeline]:
@@ -23,6 +24,7 @@ def register_pipelines() -> dict[str, Pipeline]:
         "urban_trees_pipeline" : urban_trees_pipeline.create_pipeline(),
         "urban_landuse_pipeline" : urban_landuse_pipeline.create_pipeline(),
         "covariates_pipeline" : covariates_pipeline.create_pipeline(),
+        "modelling_pipeline" : modelling_pipeline.create_pipeline(),
 
         "__default__": data_preparation_pipeline.create_pipeline() + 
                         hotspot_analysis_pipeline.create_pipeline() +
@@ -33,5 +35,6 @@ def register_pipelines() -> dict[str, Pipeline]:
                         morphology_profile_pipeline.create_pipeline() + 
                         urban_trees_pipeline.create_pipeline() +
                         urban_landuse_pipeline.create_pipeline() +
-                        covariates_pipeline.create_pipeline()
+                        covariates_pipeline.create_pipeline() +
+                        modelling_pipeline.create_pipeline()
     }

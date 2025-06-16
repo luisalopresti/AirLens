@@ -284,3 +284,52 @@ modelling_gdf:
   type: geopandas.GenericDataset
   filepath: data/05_model_input/air_covariates_VIFcleaned.parquet
   file_format: parquet
+
+maps_covariates:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/maps_covariates.png 
+
+# -----------------------------------------------------
+#                  Modelling Pipeline
+# -----------------------------------------------------
+
+## GWR 
+
+gwr_model:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/gwr_model.pkl
+  backend: pickle
+
+gwr_significance:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/gwr_significance.pkl
+  backend: pickle
+
+gwr_significance_maps:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/gwr/gwr_significance_maps.png 
+
+gwr_diagnostics_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/gwr/gwr_diagnostics_plot.png 
+
+
+## MGWR
+
+mgwr_model:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/mgwr_model.pkl
+  backend: pickle
+
+mgwr_significance:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/mgwr_significance.pkl
+  backend: pickle
+
+mgwr_significance_maps:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/mgwr/mgwr_significance_maps.png 
+
+mgwr_diagnostics_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/mgwr/mgwr_diagnostics_plot.png 
