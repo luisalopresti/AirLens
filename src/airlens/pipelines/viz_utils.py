@@ -1,4 +1,7 @@
 def variables_shortnames_dict():
+    '''
+    Function to map long variable names to visualization-friendly names
+    '''
     return {
         'Avg_hourly_traffic_idw': 'traffic',
         '3D_compactness': 'compactness_3d',
