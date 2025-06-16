@@ -5,6 +5,8 @@ import contextily as ctx
 import geopandas as gpd
 import esda
 from typing import Optional
+import numpy as np 
+np.random.seed(42)
 
 from .hotspot_helpers import optimal_k_Local_Moran, weights_and_lags
 from .hotspot_helpers import moran_plots, local_morans_plot
@@ -86,7 +88,7 @@ def hotspot_analysis(gdf: gpd.GeoDataFrame,
     # get weights 
     gdf_w, w = weights_and_lags(gdf, pollutant_column, k)
     # compute lisa
-    lisa = esda.moran.Moran_Local(gdf_w[pollutant_column], w)
+    lisa = esda.moran.Moran_Local(gdf_w[pollutant_column], w, seed=42)
     # produce morans plots
     scatter_lisa_plot = moran_plots(gdf_w, pollutant_column, lisa)
     # morans maps
