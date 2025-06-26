@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+import re
 import matplotlib.pyplot as plt
 from typing import Optional, Tuple, List
 from collections import Counter
@@ -162,6 +163,7 @@ def analyze_gwr_significance(gwr_results, air_gdf, pollutant_column) -> dict:
     # LCC, VIF, CN, VDP = gwr_model.local_collinearity() # for GWR only
 
     return {
+        "model_info":gwr_results["model_info"],
         "air_gdf_with_coeffs": air_gdf,
         "predictors": predictors,
         "significance_summary": significance_summary,
@@ -179,6 +181,7 @@ def plot_gwr_coefficients_from_summary(gwr_significance_output: dict,
     with at least one region significant at alpha = 0.05
     '''
     # extract all needed elements from significance analysis
+    model_name = re.findall(r'\((.*?)\)', gwr_significance_output['model_info'])[0]
     air_gdf = gwr_significance_output["air_gdf_with_coeffs"]
     gwr_filtered_t = gwr_significance_output["gwr_filtered_t"]
     gwr_filtered_tc = gwr_significance_output["gwr_filtered_t_corrected"]
@@ -241,9 +244,9 @@ def plot_gwr_coefficients_from_summary(gwr_significance_output: dict,
         # axes[i,1].set_title(f'GWR: {chosen_variable} - significant coeffs (0.05)', fontsize=12)
         # axes[i,2].set_title(f'GWR: {chosen_variable} - significant coeffs (corrected alpha)', fontsize=12)
 
-        axes[i,0].set_title(f'GWR: {chosen_variable}', fontsize=12)
-        axes[i,1].set_title(f'GWR: Significant coeffs (alpha = 0.05)', fontsize=12)
-        axes[i,2].set_title(f'GWR: Significant coeffs (corrected alpha)', fontsize=12)
+        axes[i,0].set_title(f'{model_name}: {chosen_variable}', fontsize=12)
+        axes[i,1].set_title(f'{model_name}: Significant coeffs (alpha = 0.05)', fontsize=12)
+        axes[i,2].set_title(f'{model_name}: Significant coeffs (corrected alpha)', fontsize=12)
 
     return fig
 
@@ -269,8 +272,11 @@ def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
         - crs_metric: CRS for distance calculations
         - figsize: tuple, figure size
     '''
-
-    np.random.seed(42)  # for reproducibility of Moran's I
+    # extract model name
+    model_name = re.findall(r'\((.*?)\)', gwr_results['model_info'])[0]
+    
+    # set seeds for reproducibility of Moran's I
+    np.random.seed(42)  
 
     # rename variables for plot labels
     short_names = variables_shortnames_dict()
@@ -312,7 +318,7 @@ def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
         legend=True, legend_kwds={'shrink': 0.6}
     )
     ctx.add_basemap(ax0, crs=crs_latlon)
-    ax0.set_title('Residuals\n' + moran_caption, fontsize=14)
+    ax0.set_title(f'{model_name} Residuals\n' + moran_caption, fontsize=14)
     ax0.axis('off')
 
     # Standard Deviation Bar Chart
