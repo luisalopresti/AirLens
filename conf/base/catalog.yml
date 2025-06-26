@@ -143,10 +143,12 @@ air_traffic_gdf:
   type: geopandas.GenericDataset
   filepath: data/03_primary/ED_traffic.parquet
   file_format: parquet
+  versioned: true
 
 map_pollutant_traffic:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/map_pollutant_traffic.png 
+  versioned: true
 
 
 # -----------------------------------------------------
@@ -168,16 +170,19 @@ building_gdf_clipped:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/buildings_clip.parquet
   file_format: parquet
+  versioned: true
 
 building_morphology_gdf:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/building_morphology_gdf.parquet
   file_format: parquet
+  versioned: true
 
 air_build_morph_gdf:
   type: geopandas.GenericDataset
   filepath: data/03_primary/air_build_morph_gdf.parquet
   file_format: parquet
+  versioned: true
 
 
 # -----------------------------------------------------
@@ -187,26 +192,31 @@ air_build_morph_gdf:
 len_street_class_per_unit:
   type: pandas.CSVDataset
   filepath: data/02_intermediate/len_street_class_per_unit.csv
+  versioned: true
 
 norm_len_street_class_per_unit:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/normalized_len_street_class_per_unit.parquet
   file_format: parquet
+  versioned: true
 
 clip_street:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/clip_street.parquet
   file_format: parquet
+  versioned: true
 
 air_road_morph_gdf:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/air_road_morph_gdf.parquet
   file_format: parquet
+  versioned: true
 
 air_road_gdf:
   type: geopandas.GenericDataset
   filepath: data/03_primary/air_road_gdf.parquet
   file_format: parquet
+  versioned: true
 
 
 # -----------------------------------------------------
@@ -216,6 +226,7 @@ air_road_gdf:
 unit_street_profile:
   type: pandas.CSVDataset
   filepath: data/02_intermediate/street_profile.csv
+  versioned: true
 
 
 # -----------------------------------------------------
@@ -231,11 +242,13 @@ trees_in_units:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/trees_in_units.parquet
   file_format: parquet
+  versioned: true
 
 air_trees_features:
   type: geopandas.GenericDataset
   filepath: data/03_primary/air_trees_features.parquet
   file_format: parquet
+  versioned: true
 
 
 # -----------------------------------------------------
@@ -251,11 +264,13 @@ landuse_to_unit:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/landuse_to_unit.parquet
   file_format: parquet
+  versioned: true
 
 landuse_perc_per_unit:
   type: geopandas.GenericDataset
   filepath: data/03_primary/landuse_perc_per_unit.parquet
   file_format: parquet
+  versioned: true
 
 
 # -----------------------------------------------------
@@ -266,28 +281,34 @@ merged_covs_air:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/merged_covs_air.parquet
   file_format: parquet
+  versioned: true
 
 filtered_covs_air:
   type: geopandas.GenericDataset
   filepath: data/02_intermediate/filtered_covs_air.parquet
   file_format: parquet
+  versioned: true
 
 plot_corr_matrix:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/corr_mat.png 
+  versioned: true
 
 plot_hists:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/plot_hists.png 
+  versioned: true
 
 modelling_gdf:
   type: geopandas.GenericDataset
   filepath: data/05_model_input/air_covariates_VIFcleaned.parquet
   file_format: parquet
+  versioned: true
 
 maps_covariates:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/maps_covariates.png 
+  versioned: true
 
 # -----------------------------------------------------
 #                  Modelling Pipeline
@@ -299,19 +320,23 @@ gwr_model:
   type: pickle.PickleDataset
   filepath: data/07_model_output/gwr_model.pkl
   backend: pickle
+  versioned: true
 
 gwr_significance:
   type: pickle.PickleDataset
   filepath: data/07_model_output/gwr_significance.pkl
   backend: pickle
+  versioned: true
 
 gwr_significance_maps:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/gwr/gwr_significance_maps.png 
+  versioned: true
 
 gwr_diagnostics_plot:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/gwr/gwr_diagnostics_plot.png 
+  versioned: true
 
 
 ## MGWR
@@ -320,16 +345,20 @@ mgwr_model:
   type: pickle.PickleDataset
   filepath: data/07_model_output/mgwr_model.pkl
   backend: pickle
+  versioned: true
 
 mgwr_significance:
   type: pickle.PickleDataset
   filepath: data/07_model_output/mgwr_significance.pkl
   backend: pickle
+  versioned: true
 
 mgwr_significance_maps:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/mgwr/mgwr_significance_maps.png 
+  versioned: true
 
 mgwr_diagnostics_plot:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/mgwr/mgwr_diagnostics_plot.png 
+  versioned: true
