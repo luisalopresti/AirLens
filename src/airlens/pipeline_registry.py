@@ -26,6 +26,16 @@ def register_pipelines() -> dict[str, Pipeline]:
         "covariates_pipeline" : covariates_pipeline.create_pipeline(),
         "modelling_pipeline" : modelling_pipeline.create_pipeline(),
 
+
+        "all_covariates_pipelines": traffic_pipeline.create_pipeline() +
+                                    buildings_pipeline.create_pipeline() +
+                                    streets_pipeline.create_pipeline() +
+                                    morphology_profile_pipeline.create_pipeline() + 
+                                    urban_trees_pipeline.create_pipeline() +
+                                    urban_landuse_pipeline.create_pipeline() +
+                                    covariates_pipeline.create_pipeline(),
+
+
         "__default__": data_preparation_pipeline.create_pipeline() + 
                         hotspot_analysis_pipeline.create_pipeline() +
                         temporal_pipeline.create_pipeline() +
