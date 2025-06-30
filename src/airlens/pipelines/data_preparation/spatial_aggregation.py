@@ -232,4 +232,25 @@ def sample_per_spatial_unit(aggr_df: gpd.GeoDataFrame,
     fig.text(0.5, 0.01, caption, ha='center', va='bottom', fontsize=13)
 
     plt.tight_layout(rect=[0, 0.05, 1, 1])
-    return plt 
+    return fig, df
+
+
+def remove_undersampled_units(gdf_assigned_to_unit: gpd.GeoDataFrame,
+                              summary_stats_df: gpd.GeoDataFrame,
+                              min_quantile_threshold: float):
+    '''
+    Remove spatial units with fewer observations than a specified threshold. 
+    
+    The threshold is defined based on a quantile: 
+    units with a number of observations below the x-th quantile are excluded. 
+    The x-th quantile is defined by the min_quantile_threshold parameter.
+
+    Other inputs:
+        - gdf_assigned_to_unit: geodataframe containing the point observation assigned to the spatial unit
+        - summary_stats_df: dataframe containing the summary statistics for each spatial unit, 
+                            namely the count of obs per unit and the percentage of obs per unit
+    '''
+    ## REMOVE GEOMS WITH LESS THAN X QUANTILE OBS COUNT
+    threshold = summary_stats_df['obs_cnt'].quantile([min_quantile_threshold]).item()
+    summary_stats_df = summary_stats_df[summary_stats_df['obs_cnt']>threshold].reset_index(drop=True)
+    return gdf_assigned_to_unit[gdf_assigned_to_unit.SpatialUnitID.isin(summary_stats_df.SpatialUnitID.unique())].reset_index(drop=True)
