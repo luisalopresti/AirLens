@@ -361,7 +361,7 @@ def run_mgwr_model(air_gdf: gpd.GeoDataFrame,
 
     # MGWR bandwidth selector
     selector = Sel_BW(coords, y, X, kernel=kernel, multi=True)
-    selector.search(multi_bw_min=[2])
+    bws = selector.search(multi_bw_min=[2])
 
     # fit MGWR
     mgwr_model = MGWR(coords, y, X, selector, kernel=kernel)
@@ -369,6 +369,7 @@ def run_mgwr_model(air_gdf: gpd.GeoDataFrame,
 
     res = {
         "model_info": f"MultiScale Geographically Weighted Regression (MGWR), kernel = {kernel}",
+        "gwr_bandwidth": bws,
         "gwr_params": pd.DataFrame(mgwr_results.params, columns=['Intercept'] + predictors, index=air_gdf.index),
         "gwr_model": mgwr_results
     }
