@@ -184,7 +184,8 @@ def plot_variable_distributions(df: pd.DataFrame,
     df = df.rename(columns=short_names)
     
     numeric_df = df.select_dtypes(include=np.number)
-    numeric_df.drop(columns=['SpatialUnitID'], inplace=True)
+    if 'SpatialUnitID' in numeric_df.columns:
+        numeric_df.drop(columns=['SpatialUnitID'], inplace=True)
     cols = numeric_df.columns.tolist()
     
     if target and target in cols:
