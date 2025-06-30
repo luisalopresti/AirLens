@@ -23,6 +23,7 @@ from .Valhalla_map_matching import process_single_date
 from .spatiotemporal_outlier_detection import temporal_outlier_detection, best_LOF
 from .spatial_aggregation import assign_pt_to_ED, assign_pt_to_hex, assign_point_to_road
 from .spatial_aggregation import sample_per_spatial_unit
+from .spatial_aggregation import remove_undersampled_units
 
 '''
 Created on May 3, 2025
@@ -444,7 +445,7 @@ def viz_outliers(df_outliers: gpd.GeoDataFrame,
 
     fig.suptitle('Spatial Distribution of Different Outlier Types', fontsize=16)
     fig.set_constrained_layout(True)
-    return plt
+    return fig
 
 
 
@@ -521,7 +522,7 @@ def distribution_comparison(original_data: gpd.GeoDataFrame,
     )
 
     plt.tight_layout()
-    return plt
+    return fig
 
 
 
@@ -532,6 +533,7 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
                               ed_gdf: Optional[gpd.GeoDataFrame] = None,
                               resolution: Optional[int] = 8,
                               road_gdf: Optional[gpd.GeoDataFrame] = None,
+                              min_quantile_threshold: Optional[float] = None,
                               crs_latlon: Optional[str] = "EPSG:4326",
                               crs_metric: Optional[str] = "EPSG:3857"):
     '''
@@ -564,8 +566,16 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
         raise NotImplementedError("Chosen spatial unit not implemented.\nValid values include 'ED' for electoral divisions, 'hex' for aggregation by h3 hexagons, and 'road' for processed OSM roads.")
 
 
-    ## sample distribution plots
-    num_obs_per_unit = sample_per_spatial_unit(gdf_assigned_to_unit, pollutant_column)
+    ## sample distribution plots & summary obs count per unit
+    num_obs_per_unit, summary_stats_df = sample_per_spatial_unit(gdf_assigned_to_unit, pollutant_column)
+
+
+    ## clean gdf (keep unit with a minimum of obs defined by quantile -> min_quantile_threshold)
+    ## by default all units kept (no quantile filter applied, but can be changed using min_quantile_threshold parameter)
+    ## summary_stats_df -> columns: SpatialUnitID, geometry, obs_cnt, obs_pct
+    if min_quantile_threshold:
+        gdf_assigned_to_unit = remove_undersampled_units(gdf_assigned_to_unit, summary_stats_df, min_quantile_threshold)
+
 
     ## aggregate
     ## obtain typical daily average per spatial unit via two-step aggregation
