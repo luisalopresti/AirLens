@@ -44,6 +44,9 @@ def combine_covariates(air_gdf: gpd.GeoDataFrame,
     merged = reduce(lambda left, right: pd.merge(left, right, on='SpatialUnitID', how='outer'), 
                     covariates_gdfs + [air_gdf])
 
+    # remove rows (units) with missing values for covariates ## NOTE quick fix for empty hex 
+    merged = merged.dropna()
+
     return gpd.GeoDataFrame(merged, geometry='geometry', crs=air_gdf.crs)
 
 
