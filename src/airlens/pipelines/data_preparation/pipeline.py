@@ -105,6 +105,7 @@ def create_pipeline(**kwargs):
                 "pollutant_column" : "params:pollutant",
                 "timestamp_column": "params:timestamp_column",
                 "spatial_unit" : "params:spatial_unit_2_hex", 
+                "min_quantile_threshold": "params:hex_min_obs_count", # filter min num obs per hexagon
                 # "resolution" default value 8
                 "crs_latlon" : "params:crs_latlon"
             },
