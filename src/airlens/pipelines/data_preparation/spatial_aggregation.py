@@ -164,9 +164,8 @@ def truncate_colormap(cmap, minval=0.3, maxval=1.0, n=256):
     return new_cmap
 
 
-def sample_per_spatial_unit(aggr_df: gpd.GeoDataFrame, 
+def summary_obs_cnt_per_unit(aggr_df: gpd.GeoDataFrame, 
                              pollutant_column: str):
-    '''Plots of count/percentage of observations for each spatial unit'''
     df = aggr_df.copy()
     ## make sure to consider only valid pollutant data point
     df.dropna(subset=[pollutant_column], inplace=True)
@@ -179,7 +178,13 @@ def sample_per_spatial_unit(aggr_df: gpd.GeoDataFrame,
     df = df[['SpatialUnitID', 'geometry', 'obs_cnt']].drop_duplicates(subset=['SpatialUnitID'])
     # compute percent of all samples found in each spatial unit
     df['obs_pct'] = df['obs_cnt'] / df['obs_cnt'].sum() * 100
+    return df
 
+
+def sample_per_spatial_unit(aggr_df: gpd.GeoDataFrame, 
+                             pollutant_column: str):
+    '''Plots of count/percentage of observations for each spatial unit'''
+    df = summary_obs_cnt_per_unit(aggr_df, pollutant_column)
 
     ## summary stats
     cnt_min = df['obs_cnt'].min()
@@ -215,7 +220,7 @@ def sample_per_spatial_unit(aggr_df: gpd.GeoDataFrame,
     # cbar.set_label('% of Total Samples')
 
     ## hist plot distribution of sample counts
-    ax2.hist(list(obs_cnts.values()), bins=100, edgecolor='black')
+    ax2.hist(df.obs_cnt, bins=100, edgecolor='black')
     ax2.set_title('Distribution of Sample Counts per Spatial Unit', fontsize=13)
     ax2.set_xlabel('Total Sample Count')
     ax2.set_ylabel('Number of Spatial Units')
@@ -232,25 +237,25 @@ def sample_per_spatial_unit(aggr_df: gpd.GeoDataFrame,
     fig.text(0.5, 0.01, caption, ha='center', va='bottom', fontsize=13)
 
     plt.tight_layout(rect=[0, 0.05, 1, 1])
-    return fig, df
+    return fig
 
 
 def remove_undersampled_units(gdf_assigned_to_unit: gpd.GeoDataFrame,
-                              summary_stats_df: gpd.GeoDataFrame,
+                              pollutant_column: str,
                               min_quantile_threshold: float):
     '''
     Remove spatial units with fewer observations than a specified threshold. 
     
     The threshold is defined based on a quantile: 
     units with a number of observations below the x-th quantile are excluded. 
-    The x-th quantile is defined by the min_quantile_threshold parameter.
+    The x-th quantile is defined by the `min_quantile_threshold` parameter.
 
     Other inputs:
         - gdf_assigned_to_unit: geodataframe containing the point observation assigned to the spatial unit
-        - summary_stats_df: dataframe containing the summary statistics for each spatial unit, 
-                            namely the count of obs per unit and the percentage of obs per unit
+        - pollutant_column: pollutant to analyze
     '''
     ## REMOVE GEOMS WITH LESS THAN X QUANTILE OBS COUNT
+    summary_stats_df = summary_obs_cnt_per_unit(gdf_assigned_to_unit, pollutant_column)
     threshold = summary_stats_df['obs_cnt'].quantile([min_quantile_threshold]).item()
     summary_stats_df = summary_stats_df[summary_stats_df['obs_cnt']>threshold].reset_index(drop=True)
     return gdf_assigned_to_unit[gdf_assigned_to_unit.SpatialUnitID.isin(summary_stats_df.SpatialUnitID.unique())].reset_index(drop=True)

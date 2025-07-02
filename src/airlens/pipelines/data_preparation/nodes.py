@@ -566,15 +566,16 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
         raise NotImplementedError("Chosen spatial unit not implemented.\nValid values include 'ED' for electoral divisions, 'hex' for aggregation by h3 hexagons, and 'road' for processed OSM roads.")
 
 
-    ## sample distribution plots & summary obs count per unit
-    num_obs_per_unit, summary_stats_df = sample_per_spatial_unit(gdf_assigned_to_unit, pollutant_column)
-
-
+   
     ## clean gdf (keep unit with a minimum of obs defined by quantile -> min_quantile_threshold)
     ## by default all units kept (no quantile filter applied, but can be changed using min_quantile_threshold parameter)
-    ## summary_stats_df -> columns: SpatialUnitID, geometry, obs_cnt, obs_pct
     if min_quantile_threshold:
-        gdf_assigned_to_unit = remove_undersampled_units(gdf_assigned_to_unit, summary_stats_df, min_quantile_threshold)
+        print('Omitting undersampled units...')
+        gdf_assigned_to_unit = remove_undersampled_units(gdf_assigned_to_unit, pollutant_column, min_quantile_threshold)
+
+
+    ## sample plots per unit, after undersampled units removal
+    num_obs_per_unit = sample_per_spatial_unit(gdf_assigned_to_unit, pollutant_column)
 
 
     ## aggregate
@@ -601,9 +602,6 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
 
 
 
-## TODO: comment input and outputs for all functions
 
 ## TODO: make usage of OSMRoadAssembler independent from path
 ## currently using sys.path.append('/home/luisa/Documents/Projects/OSMRoadAssembler/src')
-
-## TODO: plots should return fig not plt

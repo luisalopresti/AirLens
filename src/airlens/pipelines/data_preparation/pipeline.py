@@ -89,6 +89,7 @@ def create_pipeline(**kwargs):
                 "pollutant_column" : "params:pollutant",
                 "timestamp_column" : "params:timestamp_column",
                 "spatial_unit" : "params:spatial_unit_1_ED", 
+                "min_quantile_threshold": "params:ED_min_obs_count",
                 "ed_gdf" : "electoral_divisions",
                 "crs_latlon" : "params:crs_latlon"
             },
