@@ -15,6 +15,7 @@ from shapely.geometry import box
 import h3
 from typing import Optional
 from shapely import Polygon
+import networkx as nx
 
 # -------------------------------------------------
 #        Assign points to custimed geometries
@@ -152,17 +153,8 @@ def assign_point_to_road(pt_gdf: gpd.GeoDataFrame,
 
 
 # ---------------------------------------
-#        Plots of Samples per Unit
+#        Remove Undersampled Units
 # ---------------------------------------
-
-def truncate_colormap(cmap, minval=0.3, maxval=1.0, n=256):
-    '''Truncate a colormap to avoid very light colors.'''
-    new_cmap = LinearSegmentedColormap.from_list(
-        f'trunc({cmap.name},{minval:.2f},{maxval:.2f})',
-        cmap(np.linspace(minval, maxval, n))
-    )
-    return new_cmap
-
 
 def summary_obs_cnt_per_unit(aggr_df: gpd.GeoDataFrame, 
                              pollutant_column: str):
@@ -179,6 +171,40 @@ def summary_obs_cnt_per_unit(aggr_df: gpd.GeoDataFrame,
     # compute percent of all samples found in each spatial unit
     df['obs_pct'] = df['obs_cnt'] / df['obs_cnt'].sum() * 100
     return df
+
+
+def remove_undersampled_units(gdf_assigned_to_unit: gpd.GeoDataFrame,
+                              pollutant_column: str,
+                              min_quantile_threshold: float):
+    '''
+    Remove spatial units with fewer observations than a specified threshold. 
+    
+    The threshold is defined based on a quantile: 
+    units with a number of observations below the x-th quantile are excluded. 
+    The x-th quantile is defined by the `min_quantile_threshold` parameter.
+
+    Other inputs:
+        - gdf_assigned_to_unit: geodataframe containing the point observation assigned to the spatial unit
+        - pollutant_column: pollutant to analyze
+    '''
+    ## REMOVE GEOMS WITH LESS THAN X QUANTILE OBS COUNT
+    summary_stats_df = summary_obs_cnt_per_unit(gdf_assigned_to_unit, pollutant_column)
+    threshold = summary_stats_df['obs_cnt'].quantile([min_quantile_threshold]).item()
+    summary_stats_df = summary_stats_df[summary_stats_df['obs_cnt']>threshold].reset_index(drop=True)
+    return gdf_assigned_to_unit[gdf_assigned_to_unit.SpatialUnitID.isin(summary_stats_df.SpatialUnitID.unique())].reset_index(drop=True)
+
+
+# ---------------------------------------
+#        Plots of Samples per Unit
+# ---------------------------------------
+
+def truncate_colormap(cmap, minval=0.3, maxval=1.0, n=256):
+    '''Truncate a colormap to avoid very light colors.'''
+    new_cmap = LinearSegmentedColormap.from_list(
+        f'trunc({cmap.name},{minval:.2f},{maxval:.2f})',
+        cmap(np.linspace(minval, maxval, n))
+    )
+    return new_cmap
 
 
 def sample_per_spatial_unit(aggr_df: gpd.GeoDataFrame, 
@@ -240,22 +266,34 @@ def sample_per_spatial_unit(aggr_df: gpd.GeoDataFrame,
     return fig
 
 
-def remove_undersampled_units(gdf_assigned_to_unit: gpd.GeoDataFrame,
-                              pollutant_column: str,
-                              min_quantile_threshold: float):
-    '''
-    Remove spatial units with fewer observations than a specified threshold. 
-    
-    The threshold is defined based on a quantile: 
-    units with a number of observations below the x-th quantile are excluded. 
-    The x-th quantile is defined by the `min_quantile_threshold` parameter.
+# ----------------------------------------------
+#     Remove Disconnected Components (if any)
+# ----------------------------------------------
 
-    Other inputs:
-        - gdf_assigned_to_unit: geodataframe containing the point observation assigned to the spatial unit
-        - pollutant_column: pollutant to analyze
-    '''
-    ## REMOVE GEOMS WITH LESS THAN X QUANTILE OBS COUNT
-    summary_stats_df = summary_obs_cnt_per_unit(gdf_assigned_to_unit, pollutant_column)
-    threshold = summary_stats_df['obs_cnt'].quantile([min_quantile_threshold]).item()
-    summary_stats_df = summary_stats_df[summary_stats_df['obs_cnt']>threshold].reset_index(drop=True)
-    return gdf_assigned_to_unit[gdf_assigned_to_unit.SpatialUnitID.isin(summary_stats_df.SpatialUnitID.unique())].reset_index(drop=True)
+def build_spatial_graph(gdf: gpd.GeoDataFrame, 
+                        buffer: float = 0):
+    buffered = gdf.buffer(buffer)
+    graph = nx.Graph()
+    
+    for i, geom_i in enumerate(buffered):
+        graph.add_node(i)
+        for j in range(i + 1, len(buffered)):
+            if geom_i.intersects(buffered[j]):
+                graph.add_edge(i, j)
+    
+    return graph
+
+def get_largest_connected_component(gdf: gpd.GeoDataFrame, 
+                                    crs_metric: Optional[str] = "EPSG:3857", 
+                                    buffer: float = 0):
+    # convert to metric system for correct computation
+    gdf_metric = gdf.to_crs(crs_metric)
+    # build spatial graph
+    G = build_spatial_graph(gdf_metric, buffer)
+    # get connected components
+    components = list(nx.connected_components(G))
+    # get largest component
+    largest_component = max(components, key=len)
+    # keep only rows in the largest component
+    gdf_single_component = gdf_metric.loc[list(largest_component)].copy()
+    return gdf_single_component.to_crs(gdf.crs)

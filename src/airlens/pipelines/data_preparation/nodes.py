@@ -22,6 +22,7 @@ from .spatiotemporal_outlier_detection import temporal_outlier_detection, best_L
 from .spatial_aggregation import assign_pt_to_ED, assign_pt_to_hex, assign_point_to_road
 from .spatial_aggregation import sample_per_spatial_unit
 from .spatial_aggregation import remove_undersampled_units
+from .spatial_aggregation import get_largest_connected_component
 
 '''
 Created on May 3, 2025
@@ -540,6 +541,8 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
 
     spatial_unit = spatial_unit.lower()
 
+    print("Assigning observations to spatial unit...")
+
     if spatial_unit == 'ed':
         if ed_gdf is not None:
             # get electoral division geometries & assign pts to ED
@@ -572,11 +575,19 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
         gdf_assigned_to_unit = remove_undersampled_units(gdf_assigned_to_unit, pollutant_column, min_quantile_threshold)
 
 
+    ## remove islands (disconnected components) if any - expecially in hexagonal aggregation
+    print('Checking for disconnected components...')
+    units = gdf_assigned_to_unit.drop_duplicates(subset=['SpatialUnitID'])[['SpatialUnitID', 'geometry']].reset_index(drop=True)
+    connected_units = get_largest_connected_component(units, crs_metric)
+    gdf_assigned_to_unit = gdf_assigned_to_unit[gdf_assigned_to_unit.SpatialUnitID.isin(connected_units.SpatialUnitID)].reset_index(drop=True)
+
+
     ## sample plots per unit, after undersampled units removal
     num_obs_per_unit = sample_per_spatial_unit(gdf_assigned_to_unit, pollutant_column)
 
 
     ## aggregate
+    print("Aggregating point observations...")
     ## obtain typical daily average per spatial unit via two-step aggregation
     # 1. aggregate by day-location (average pollutant per day per spatial unit)
     gdf_assigned_to_unit[timestamp_column] = pd.to_datetime(gdf_assigned_to_unit[timestamp_column])
