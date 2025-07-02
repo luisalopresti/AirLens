@@ -1,0 +1,112 @@
+# ----------------------------------------------------
+#                HAMBURG DATA CATALOG
+# ----------------------------------------------------
+
+OSM_road_net:
+  type: geopandas.GenericDataset
+  filepath: data-hamburg/03_primary/OSM_road_net.parquet
+  file_format: parquet
+
+raw_air_data:
+  type: pandas.CSVDataset
+  filepath: data-hamburg/01_raw/AirView_Hamburg_Measurements_ugm3.csv
+
+filtered_raw_air_data:
+  type: geopandas.GenericDataset
+  filepath: data-hamburg/02_intermediate/AirView_filtered.parquet
+  file_format: parquet
+
+valhalla_map_matched:
+  type: geopandas.GenericDataset
+  filepath: data-hamburg/02_intermediate/AirView_mapmatched.parquet
+  file_format: parquet
+
+cleaned_air_gdf:
+  type: geopandas.GenericDataset
+  filepath: data-hamburg/02_intermediate/cleaned_air.parquet
+  file_format: parquet
+
+outliers_gdf:
+  type: geopandas.GenericDataset
+  filepath: data-hamburg/02_intermediate/outliers.parquet
+  file_format: parquet
+
+outlier_spatial_distribution:
+  type: matplotlib.MatplotlibWriter
+  filepath: data-hamburg/08_reporting/outlier_spatial_distribution.png 
+
+distribution_before_after_outlier_removal:
+  type: matplotlib.MatplotlibWriter
+  filepath: data-hamburg/08_reporting/distribution_before_after_outlier_removal.png 
+
+electoral_divisions:
+  type: geopandas.GenericDataset
+  filepath: data-hamburg/01_raw/Stadtteile_zusammengefasst_BT_BUE_2025.geojson
+  file_format: file
+
+ED_spatial_sampling_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data-hamburg/08_reporting/ED_spatial_sampling.png 
+  versioned: true
+
+ED_aggregated_air:
+  type: geopandas.GenericDataset
+  filepath: data-hamburg/03_primary/ED_aggr_cleaned_air.parquet
+  file_format: parquet
+  versioned: true
+
+hex_sampling_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data-hamburg/08_reporting/hex_spatial_sampling.png 
+  versioned: true
+
+hex_aggregated_air:
+  type: geopandas.GenericDataset
+  filepath: data-hamburg/03_primary/hex_aggr_cleaned_air.parquet
+  file_format: parquet
+  versioned: true
+
+road_sampling_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data-hamburg/08_reporting/road_spatial_sampling.png 
+  versioned: true
+
+road_aggregated_air:
+  type: geopandas.GenericDataset
+  filepath: data-hamburg/03_primary/road_aggr_cleaned_air.parquet
+  file_format: parquet
+  versioned: true
+
+# -----------------------------------------------------
+#               Hotspot Analysis Pipeline
+# -----------------------------------------------------
+
+concentration_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data-hamburg/08_reporting/concentration.png 
+  versioned: true
+
+scatter_lisa_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data-hamburg/08_reporting/scatter_lisa_plot.png 
+  versioned: true
+
+local_morans_maps:
+  type: matplotlib.MatplotlibWriter
+  filepath: data-hamburg/08_reporting/local_morans_maps.png
+  versioned: true
+
+lisa_summary:
+  type: text.TextDataset
+  filepath: data-hamburg/08_reporting/lisa_summary.txt
+  versioned: true
+
+
+# -----------------------------------------------------
+#               Temporal Pattern Pipeline
+# -----------------------------------------------------
+
+plot_temporal_pattern:
+  type: matplotlib.MatplotlibWriter
+  filepath: data-hamburg/08_reporting/plot_temporal_pattern.png 
+  versioned: true

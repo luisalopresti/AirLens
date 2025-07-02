@@ -1,0 +1,60 @@
+## timestamp, latitude and longitude columns in the original air quality dataset
+timestamp_column: "gps_timestamp"
+latitude_column: "latitude"
+longitude_column: "longitude"
+
+## pollutant of analysis (column name in original air quality dataset)
+pollutant: "NO2_ugm3"
+
+## coordinate reference systems used
+crs_latlon: "EPSG:4326"
+crs_metric: "EPSG:10285"
+
+## parameters used to filter temporal extent of air quality analysis
+start_time: "2021-11-01T00:00:00"
+end_time: "2022-03-31T23:59:59"
+
+
+## parameters for Valhalla Docker map-matching
+## NOTE: DO **NOT** change the Valhalla Docker parameters unless you specifically set your docker image with different settings
+## function/node: run_valhalla_mapmatching
+## node name: map_match
+use_valhalla: True
+valhalla_docker_img: "gisops_docker_valhalla_1"
+MAX_POINTS: 16000
+MIN_POINTS: 10
+MINUTES_TIME_GAP: 5
+
+
+## the following params are used to aggregate data point
+## at different spatial units; one may select the preferred unit(s)
+## among the ones below
+spatial_unit_1_ED: "ED"
+ED_min_obs_count: 0.15
+spatial_unit_2_hex: "hex"
+hex_min_obs_count: 0.25
+spatial_unit_3_road: "road"
+
+## parameters for processing OSM road network
+## used in function: OSM_roads
+## node name: osm_roads_node
+place_name: "Hamburg, Germany"
+directions:
+  - "obere"
+  - "untere"
+abbreviations:
+  st: "straße"
+  rd: "straße"
+  al: "allee"
+  blv: "boulevard"
+words_to_rm:
+  - "straße"
+  - "strasse"
+  - "st"
+  - "rd"
+  - "al"
+  - "allee"
+  - "platz"
+  - "blv"
+  - "boulevard"
+  - "weg"
