@@ -13,6 +13,8 @@ conf/**/*credentials*
 # ignore everything in the following folders
 data/**
 data
+data-hamburg/**
+data-hamburg
 
 # except their sub-folders
 !data/**/
