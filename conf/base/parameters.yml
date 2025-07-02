@@ -10,6 +10,7 @@ longitude_column: "longitude"
 ## at different spatial units; one may select the preferred unit(s)
 ## among the ones below
 spatial_unit_1_ED: "ED"
+ED_min_obs_count: null
 spatial_unit_2_hex: "hex"
 hex_min_obs_count: 0.1
 spatial_unit_3_road: "road"
