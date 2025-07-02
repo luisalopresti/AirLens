@@ -16,9 +16,7 @@ import seaborn as sns
 import shapely
 import warnings
 
-import sys
-sys.path.append('/home/luisa/Documents/Projects/OSMRoadAssembler/src')
-from process_roads import *
+from .OSMRoadAssembler.process_roads import *
 from .Valhalla_map_matching import process_single_date
 from .spatiotemporal_outlier_detection import temporal_outlier_detection, best_LOF
 from .spatial_aggregation import assign_pt_to_ED, assign_pt_to_hex, assign_point_to_road
@@ -600,8 +598,3 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
 
     return num_obs_per_unit, aggr_df
 
-
-
-
-## TODO: make usage of OSMRoadAssembler independent from path
-## currently using sys.path.append('/home/luisa/Documents/Projects/OSMRoadAssembler/src')
