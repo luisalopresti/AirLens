@@ -204,9 +204,11 @@ def aggregate_traffic_spatially(air_gdf: gpd.GeoDataFrame,
     air_traffic_gdf.rename(columns={'SpatialUnitGeometry':'geometry'}, inplace=True)
     air_traffic_gdf = gpd.GeoDataFrame(air_traffic_gdf, geometry='geometry', crs=air_geoms.crs)
     
-    print(f"Note that {len(air_traffic_gdf[air_traffic_gdf.Avg_hourly_traffic.isna()])} units have missing traffic count.")
+    # compute number of units without traffic observations
+    units_without_traffic_cnt = len(air_traffic_gdf[air_traffic_gdf.Avg_hourly_traffic.isna()])
+    print(f"Note that {units_without_traffic_cnt} units have missing traffic count.")
 
-    if filling_na:
+    if filling_na and units_without_traffic_cnt > 0:
         print("Interpolation via IDW is being applied...")
         air_traffic_gdf.to_crs(crs_metric, inplace=True)
         air_traffic_gdf_filled = idw_interpolation(air_traffic_gdf, 
