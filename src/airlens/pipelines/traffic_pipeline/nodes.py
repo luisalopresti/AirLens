@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import geopandas as gpd
-from typing import Optional
+from typing import Optional, Literal
 import matplotlib.pyplot as plt
 import contextily as ctx
 from matplotlib.cm import ScalarMappable
@@ -13,33 +13,74 @@ Created on May 3, 2025
 
 @author: Luisa Lo Presti
 
-1. get_traffic -> process traffic data and returns dataframe with average traffic volume per site ID.
+1. time_filters (helper function) -> select specified timeframe for analysis
 
-2. add_georef -> assign geocoordinates to sites based on unique identifiers.
+2. aggregate_traffic (helper function) -> process traffic data and returns dataframe with average traffic volume per site ID.
 
-3. plot_avg_traffic_by_site -> plot average traffic by site on map.
+3. add_georef (helper function) -> assign geocoordinates to sites based on unique identifiers.
 
-4. aggregate_traffic_spatially -> assign each site to the corresponding spatial unit of analysis, 
+3. get_traffic -> handles raw hourly traffic data and daily aggregated data, returning final traffic dataset for analysis
+
+4. plot_avg_traffic_by_site -> plot average traffic by site on map.
+
+5. aggregate_traffic_spatially -> assign each site to the corresponding spatial unit of analysis, 
                                 and aggregate the traffic information.
 
-5. viz_traffic_and_pollutant -> maps of pollutant and traffic side by side, 
+6. viz_traffic_and_pollutant -> maps of pollutant and traffic side by side, 
                                 aggregated at the same spatial unit.
 '''
 
 
-def get_traffic(traffic_df: gpd.GeoDataFrame,
-                traffic_timestamp: str, 
-                sites_ID: str, 
-                count_column: str,
-                timestamp_format: Optional[str] = None, 
-                start_day: Optional[str] = None,
-                end_day: Optional[str] = None,
-                start_hour: Optional[str] = None,
-                end_hour: Optional[str] = None, 
-                weekdays_only: Optional[bool] = False, 
-                weekends_only: Optional[bool] = False, 
-                lower_quantile_filter: float = 0.01,
-                upper_quantile_filter: float = 0.99): 
+def time_filters(traffic_df: pd.DataFrame,
+                 traffic_timestamp: str,
+                 start_day: Optional[str] = None,
+                 end_day: Optional[str] = None,
+                 start_hour: Optional[str] = None,
+                 end_hour: Optional[str] = None,
+                 weekdays_only: Optional[bool] = False,
+                 weekends_only: Optional[bool] = False):
+    
+    if weekdays_only and weekends_only:
+        raise ValueError('weekdays_only cannot be True at the same time as weekends_only.')
+    
+    # filter time to cover same period of air data collection
+    if start_day and end_day:
+        start_ts, end_ts = pd.to_datetime(start_day), pd.to_datetime(end_day)
+        traffic_df = traffic_df[(traffic_df[traffic_timestamp] >= pd.to_datetime(start_ts)) & (traffic_df[traffic_timestamp] <= pd.to_datetime(end_ts))]
+
+    ## filter based on time of data collection of air quality data
+    if start_hour and end_hour:
+        traffic_df = traffic_df[
+            (traffic_df[traffic_timestamp].dt.hour >= start_hour) &
+            (traffic_df[traffic_timestamp].dt.hour < end_hour)
+        ].reset_index(drop=True)
+    
+    if weekdays_only:
+        traffic_df = traffic_df[
+            (traffic_df[traffic_timestamp].dt.weekday < 5) # 0 = Monday, 4 = Friday
+        ].reset_index(drop=True)
+
+    if weekends_only:
+        traffic_df = traffic_df[
+            (traffic_df[traffic_timestamp].dt.weekday >= 5) # 5 = Saturday, 6 = Sunday
+        ].reset_index(drop=True)
+
+    return traffic_df
+
+
+def aggregate_traffic(traffic_df: gpd.GeoDataFrame,
+                        traffic_timestamp: str, 
+                        sites_ID: str, 
+                        count_column: str,
+                        timestamp_format: Optional[str] = None, 
+                        start_day: Optional[str] = None,
+                        end_day: Optional[str] = None,
+                        start_hour: Optional[str] = None,
+                        end_hour: Optional[str] = None, 
+                        weekdays_only: Optional[bool] = False, 
+                        weekends_only: Optional[bool] = False, 
+                        lower_quantile_filter: float = 0.01,
+                        upper_quantile_filter: float = 0.99): 
     '''
     Traffic count data preparation.
     The function parse and prepare the data, select the correct timeframe to analyse by filtering timestamps,
@@ -68,9 +109,6 @@ def get_traffic(traffic_df: gpd.GeoDataFrame,
 
         upper_quantile_filter: float = 0.99. Removes traffic counts above this quantile across all data. Helps eliminate extreme outliers or unusually high traffic volumes.
     '''
-    if weekdays_only and weekends_only:
-        raise ValueError('weekdays_only cannot be True at the same time as weekends_only.')
-    
     # parse timestamps
     traffic_df[traffic_timestamp] = pd.to_datetime(traffic_df[traffic_timestamp], format=timestamp_format, errors='coerce')
 
@@ -89,27 +127,15 @@ def get_traffic(traffic_df: gpd.GeoDataFrame,
     faulty_sites_ids = flag_faulty_sites(traffic_df, sites_ID, count_column)
     traffic_df = traffic_df[~traffic_df[sites_ID].isin(faulty_sites_ids)].reset_index(drop=True)
 
-    ## filter time to cover same period of air data collection
-    if start_day and end_day:
-        start_ts, end_ts = pd.to_datetime(start_day), pd.to_datetime(end_day)
-        traffic_df = traffic_df[(traffic_df[traffic_timestamp] >= pd.to_datetime(start_ts)) & (traffic_df[traffic_timestamp] <= pd.to_datetime(end_ts))]
-
-    ## filter based on time of data collection of air quality data
-    if start_hour and end_hour:
-        traffic_df = traffic_df[
-            (traffic_df[traffic_timestamp].dt.hour >= start_hour) &
-            (traffic_df[traffic_timestamp].dt.hour < end_hour)
-        ].reset_index(drop=True)
-    
-    if weekdays_only:
-        traffic_df = traffic_df[
-            (traffic_df[traffic_timestamp].dt.weekday < 5) # 0 = Monday, 4 = Friday
-        ].reset_index(drop=True)
-
-    if weekends_only:
-        traffic_df = traffic_df[
-            (traffic_df[traffic_timestamp].dt.weekday >= 5) # 5 = Saturday, 6 = Sunday
-        ].reset_index(drop=True)
+    # apply the specified time filters
+    traffic_df = time_filters(traffic_df,
+                              traffic_timestamp,
+                              start_day,
+                              end_day,
+                              start_hour,
+                              end_hour,
+                              weekdays_only,
+                              weekends_only)
 
     # remove outliers based on IQR
     q_low = traffic_df[count_column].quantile(lower_quantile_filter)
@@ -144,6 +170,72 @@ def add_georef(site_avg_traffic_df: pd.DataFrame,
     ## add geocordinates
     site_avg_traffic = pd.merge(site_avg_traffic_df, site_location_gdf, left_on='sites_ID', right_on=site_location_IDcolumn, how='inner')
     site_avg_traffic_gdf = gpd.GeoDataFrame(site_avg_traffic, geometry='geometry', crs=site_location_gdf.crs)
+    return site_avg_traffic_gdf
+
+
+
+def get_traffic(traffic_df: gpd.GeoDataFrame,
+                traffic_timestamp: str, 
+                sites_ID: str, 
+                count_column: str,
+                traffic_data_type: Literal["raw", "aggregated"] = "raw",
+                traffic_geometry_gdf: Optional[str] = None,
+                traffic_geometry_IDcolumn: Optional[str] = None,
+                timestamp_format: Optional[str] = None, 
+                start_day: Optional[str] = None,
+                end_day: Optional[str] = None,
+                start_hour: Optional[str] = None,
+                end_hour: Optional[str] = None, 
+                weekdays_only: Optional[bool] = False, 
+                weekends_only: Optional[bool] = False, 
+                lower_quantile_filter: float = 0.01,
+                upper_quantile_filter: float = 0.99):
+    
+    if traffic_data_type == "raw":
+        ## case of SCATS traffic data (e.g., Dublin case study)
+        site_avg_traffic_gdf = aggregate_traffic(traffic_df, 
+                                                traffic_timestamp, 
+                                                sites_ID,
+                                                count_column,
+                                                timestamp_format,
+                                                start_day,
+                                                end_day,
+                                                start_hour,
+                                                end_hour,
+                                                weekdays_only,
+                                                weekends_only,
+                                                lower_quantile_filter,
+                                                upper_quantile_filter)
+
+        if isinstance(traffic_geometry_gdf, gpd.GeoDataFrame):
+            site_avg_traffic_gdf = add_georef(site_avg_traffic_gdf,
+                                                traffic_geometry_gdf,
+                                                traffic_geometry_IDcolumn)
+        
+    elif traffic_data_type == "aggregated":
+        ## e.g., Hamburg case study
+        # remove timezone from timestamp for tz-safe computation 
+        if traffic_df[traffic_timestamp].dt.tz is not None:
+            traffic_df[traffic_timestamp] = traffic_df[traffic_timestamp].dt.tz_localize(None)
+    
+        # filter timeframe of analysis
+        traffic_df = time_filters(traffic_df, 
+                                    traffic_timestamp,
+                                    start_day,
+                                    end_day,
+                                    weekdays_only,
+                                    weekends_only)
+        
+        # for each site, take the average count over the whole timeperiod
+        # to get the typical hourly traffic volume by location
+        site_avg_traffic = traffic_df.groupby([sites_ID, 'geometry'])[count_column].mean().reset_index()
+        site_avg_traffic.rename(columns={sites_ID: 'sites_ID',
+                                        count_column: 'Avg_hourly_traffic'}, inplace=True)
+        site_avg_traffic_gdf = gpd.GeoDataFrame(site_avg_traffic, geometry='geometry', crs=traffic_df.crs)
+    
+    else:
+        raise ValueError("Unknown traffic_data_type. Data preparation options are implemented for raw hourly data, and aggregated (daily) data.")
+    
     return site_avg_traffic_gdf
 
 
