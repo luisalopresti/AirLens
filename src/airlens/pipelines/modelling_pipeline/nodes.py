@@ -4,6 +4,7 @@ import geopandas as gpd
 import re
 import matplotlib.pyplot as plt
 from typing import Optional, Tuple, List
+from typing import Union, Literal
 from collections import Counter
 from sklearn.preprocessing import StandardScaler
 from mgwr.gwr import GWR, MGWR
@@ -13,6 +14,9 @@ import matplotlib.gridspec as gridspec
 import contextily as ctx
 from pysal.explore import esda
 from pysal.lib import weights
+
+import itertools 
+import random
 
 from ..viz_utils import variables_shortnames_dict
 
@@ -60,8 +64,27 @@ def prepare_gwr_data(air_gdf: gpd.GeoDataFrame,
     return X, y, coords, predictors, air_gdf
 
 
+def gwr_model(X: np.array, 
+              y: np.array,
+              coords: np.array,
+              kernel: str,
+              criterion: str):
+    '''Geographically Weighted Regression model'''
+    # select optimal bandwidth using cross-validation 
+    # (adaptive method by default, i.e., bandwidth represents the number of nearest neighbours)
+    selector = Sel_BW(coords, y, X, kernel=kernel)
+    bw = selector.search(criterion=criterion, bw_min=2, bw_max=X.shape[0] - 1) # max num unit minus one (itself)
+    # print('Optimal Bandwidth (adaptive):', bw)
+
+    # fit GWR model
+    gwr_model = GWR(coords, y, X, bw, kernel=kernel)
+    gwr_results = gwr_model.fit()
+    return gwr_results, bw
+
+
 def run_gwr_model(air_gdf: gpd.GeoDataFrame,
                   pollutant_column: str,
+                  criterion: str = 'AICc',
                   kernel: str = "exponential",
                   crs_metric: Optional[str] = "EPSG:3857") -> dict:
     '''
@@ -75,17 +98,11 @@ def run_gwr_model(air_gdf: gpd.GeoDataFrame,
     Returns:
         dict: dictionary with fitted model and location-specific coefficients
     '''
+    # get model inputs
     X, y, coords, predictors, air_gdf = prepare_gwr_data(air_gdf, pollutant_column, crs_metric)
 
-    # select optimal bandwidth using cross-validation 
-    # (adaptive method by default, i.e., bandwidth represents the number of nearest neighbours)
-    selector = Sel_BW(coords, y, X, kernel=kernel)
-    bw = selector.search()
-    # print('Optimal Bandwidth (adaptive):', bw)
-
-    # fit GWR model
-    gwr_model = GWR(coords, y, X, bw, kernel=kernel)
-    gwr_results = gwr_model.fit()
+    # perform GWR
+    gwr_results, bw = gwr_model(X, y, coords, kernel, criterion)
 
     res = {
         "model_info": f"Geographically Weighted Regression (GWR), kernel = {kernel}",
@@ -348,24 +365,60 @@ def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
     return fig
 
 
+def GWR_local_R2(modelling_gdf: gpd.GeoDataFrame,
+                 gwr_results: dict):
+    '''Plot Local R2 Map for GWR'''
+    modelling_gdf['gwr_localR2'] = gwr_results['gwr_model'].localR2
+    fig, ax = plt.subplots(figsize=(6, 6))
+    modelling_gdf.plot(column = 'gwr_localR2', 
+                       cmap = 'coolwarm', 
+                       linewidth = 0.01, 
+                       scheme = 'FisherJenks', 
+                       k = 5, 
+                       legend = True, 
+                       legend_kwds = {'loc': 'upper right'}, # 'bbox_to_anchor':(1.10, 0.96)
+                       ax = ax)
+    ctx.add_basemap(ax, crs=modelling_gdf.crs)
+    ax.set_title('GWR Local R2', fontsize=12)
+    ax.axis("off")
+    return fig
+
 ## -------------------------------------------------------------
 ##          MULTISCALE GEOGRAPHICALLY WEIGHTED REGRESSION
 ## -------------------------------------------------------------
 
 
-def run_mgwr_model(air_gdf: gpd.GeoDataFrame,
-                   pollutant_column: str,
-                   kernel: str = "exponential",
-                   crs_metric: Optional[str] = "EPSG:3857") -> dict:
-    X, y, coords, predictors, air_gdf = prepare_gwr_data(air_gdf, pollutant_column, crs_metric)
-
+def mgwr_model(X: np.array, 
+               y: np.array, 
+               coords: np.array,
+               kernel: str, 
+               criterion: str, 
+               bw_initial_guess: int):
+    '''Multiscale Geographically Weighted Regression model'''
     # MGWR bandwidth selector
     selector = Sel_BW(coords, y, X, kernel=kernel, multi=True)
-    bws = selector.search(multi_bw_min=[2])
+    bws = selector.search(criterion = criterion,
+                          multi_bw_min = [2], 
+                          multi_bw_max = [X.shape[0] - 1],
+                          init_multi = bw_initial_guess) 
 
     # fit MGWR
     mgwr_model = MGWR(coords, y, X, selector, kernel=kernel)
     mgwr_results = mgwr_model.fit()
+    return mgwr_results, bws
+
+
+def run_mgwr_model(air_gdf: gpd.GeoDataFrame,
+                   pollutant_column: str,
+                   criterion: str = 'AICc',
+                   kernel: str = "exponential",
+                   bw_initial_guess: int = 10,
+                   crs_metric: Optional[str] = "EPSG:3857") -> dict:
+    # get model inputs
+    X, y, coords, predictors, air_gdf = prepare_gwr_data(air_gdf, pollutant_column, crs_metric)
+
+    # call MGWR 
+    mgwr_results, bws = mgwr_model(X, y, coords, kernel, criterion, bw_initial_guess)
 
     res = {
         "model_info": f"MultiScale Geographically Weighted Regression (MGWR), kernel = {kernel}",
@@ -374,3 +427,106 @@ def run_mgwr_model(air_gdf: gpd.GeoDataFrame,
         "gwr_model": mgwr_results
     }
     return res
+
+
+
+## -------------------------------------------------------------
+##         RANDOM SEARCH OF BEST EXPLANATORY VARIABLES
+## -------------------------------------------------------------
+
+def gwr_with_random_search(modelling_gdf: gpd.GeoDataFrame,
+                           target_pollutant: str,
+                           model_type: str = "GWR",
+                           N_search: Union[int, Literal["all"]] = 100, # number of iterations
+                           kernel: str = "bisquare", 
+                           criterion: str = "AICc", 
+                           bw_initial_guess: Optional[int] = 10,
+                           crs_metric: Optional[str] = "EPSG:3857") -> pd.DataFrame:
+    '''
+    Fits an GWR or MGWR model with random search for best explanatory variables combination.
+    Returns the fitted model and diagnostics as DataFrame.
+
+    Parameters:
+        - modelling_gdf: GeoDataFrame containing the target variable, explanatory variables, and geometry.
+        - target_pollutant: name of the column to be used as the target variable.
+        - model_type: type of model to fit. Options are 'GWR' or 'MGWR' (case-insensitive).
+        - N_search: number of random combinations of predictors to test during model selection.
+                    If N_search = total number of combinations or is set to 'all', 
+                    the function will perform exhaustive search over all combinations of predictors.
+        - kernel: kernel function to use in bandwidth selection. 
+                Options include: 'bisquare', 'gaussian', 'exponential'.
+        - criterion: criterion for bandwidth selection (commonly, 'AICc' or 'CV')
+        - bw_initial_guess: initial bandwidth guess for MGWR optimization.
+        - crs_metric: coordinate reference system for accurate spatial distance calculations.
+
+    Returns:
+        A DataFrame sorted by AICc containing:
+            - covariates: list of selected predictors for the model
+            - diagnostics and performance metrics (AIC, AICc, R2, adj. R2)
+            - gwr_model: the fitted GWR/MGWR model object for reuse or inspection
+    '''
+
+    if not (isinstance(N_search, int) and N_search >= 1) and N_search != "all":
+        raise ValueError("N_search must be a positive integer or 'all'")
+
+    model_type = model_type.lower()
+    if model_type not in ['gwr', 'mgwr']:
+        raise ValueError("model_type must be either 'gwr' or 'mgwr'")
+
+    # set seeds
+    np.random.seed(42)
+    random.seed(42)
+
+    result = []
+
+    # get model inputs
+    X, y, coords, predictors, _ = prepare_gwr_data(modelling_gdf, 
+                                                   target_pollutant, 
+                                                   crs_metric)
+
+
+    # select all possible combinations of columns (min 2 cols)
+    all_combos = []
+    for r in range(2, len(predictors) + 1):
+        all_combos.extend(itertools.combinations(range(len(predictors)), r))
+    
+    if N_search == "all":
+        # exhaustive search 
+        sampled_combos = all_combos
+        print(f"Running exhaustive search over {len(sampled_combos)} combinations.")
+    else:
+        # random search
+        # shuffle and get random N_search combinations
+        random.shuffle(all_combos)
+        sampled_combos = all_combos[:min(N_search, len(all_combos))]
+        print(f"Running random search with {len(sampled_combos)} combinations.")
+
+    for i, cols in enumerate(sampled_combos):
+        covariates_used = [predictors[j] for j in cols]
+
+        try:
+            if model_type == 'gwr':
+                # perform GWR
+                model, _ = gwr_model(X[:, cols], y, coords, kernel, criterion)
+            else:
+                # perform MGWR
+                model, _ = mgwr_model(X[:, cols], y, coords, kernel, criterion, bw_initial_guess)
+            
+            # store results
+            result.append({
+                'covariates': covariates_used,
+                'AIC': model.aic,
+                'AICc': model.aicc,
+                'R2': model.R2,
+                'adj. R2': model.adj_R2,
+                'gwr_model': model
+            })
+
+            print(f"[{i+1}/{len(sampled_combos)}] Success: {covariates_used} | AICc: {model.aicc:.2f}")
+        
+        except Exception as e:
+            print(f"[{i+1}/{len(sampled_combos)}] Failed for {covariates_used}: {e}")
+
+    results_gwr = pd.DataFrame(result)
+    results_gwr = results_gwr.sort_values('AICc', ascending=True)
+    return results_gwr
