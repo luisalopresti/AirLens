@@ -67,6 +67,7 @@ MINUTES_TIME_GAP: 5
 # AIR data, and they are used to match the temporal dimension
 # of the covariates (filtering):
 weekdays_only: True # whether air data were collected only on weekdays (bool)
+traffic_data_type: "raw" # Dublin SCATS data are raw hourly data to be aggregated
 start_hour: 9 # hour of beginning of data collection (included)
 end_hour: 17 # hour of end of data collection (excluded)
 
@@ -82,3 +83,16 @@ traffic_sites_ID: "Site"
 # site ID column of file containing traffic site GEOMETRIES
 # (if geometries are in a separate file, else use traffic_sites_ID again):
 traffic_ID_locationfile: "SiteID" 
+
+
+## -------------------------------
+##     GWR / MGWR modelling
+## -------------------------------
+gwr_kernel: "exponential"
+mgwr_kernel: "exponential"
+
+# random search
+exhaustive_search: "all"
+n_random_search: 100
+test_model_1: "GWR"
+test_model_2: "MGWR"

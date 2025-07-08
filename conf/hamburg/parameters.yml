@@ -58,3 +58,36 @@ words_to_rm:
   - "blv"
   - "boulevard"
   - "weg"
+
+
+## ----------------------------------------------------------
+##   All the below parameters refers to covariates data
+## ----------------------------------------------------------
+## TRAFFIC DATA
+# filter only weekdays, to match pollutant data collection time 
+weekdays_only: True
+# type of traffic data (aggregated daily)
+traffic_data_type: "aggregated"
+# columns names and format in traffic data
+traffic_timestamp_col: "end_time"
+traffic_timestamp_format: "%Y-%m-%d %H:%M:%S%z"
+traffic_count_col: "traffic_count"
+traffic_sites_ID: "thing_id"
+
+## NOT-NEEDED PARAMS for Hamburg data, set to null
+start_hour: null
+end_hour: null
+traffic_ID_locationfile: null
+
+
+## -------------------------------
+##     GWR / MGWR modelling
+## -------------------------------
+gwr_kernel: "gaussian"
+mgwr_kernel: "bisquare"
+
+# random search
+exhaustive_search: "all"
+n_random_search: 100
+test_model_1: "GWR"
+test_model_2: "MGWR"

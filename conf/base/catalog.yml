@@ -126,18 +126,15 @@ traffic_site_location:
   filepath: data/01_raw/SCATS_sites.geojson
   file_format: file
 
-avg_traffic_count_per_site:
-  type: pandas.CSVDataset
-  filepath: data/02_intermediate/avg_traffic_count_per_site.csv
-
-geo_avg_traffic_count_per_site:
+gdf_traffic_count:
   type: geopandas.GenericDataset
-  filepath: data/02_intermediate/geo_avg_traffic_count_per_site.parquet
+  filepath: data/02_intermediate/gdf_traffic_count.parquet
   file_format: parquet
 
 map_traffic_by_site:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/map_traffic_by_site.png 
+  versioned: true
 
 air_traffic_gdf:
   type: geopandas.GenericDataset
@@ -338,6 +335,11 @@ gwr_diagnostics_plot:
   filepath: data/08_reporting/gwr/gwr_diagnostics_plot.png 
   versioned: true
 
+gwr_localR2:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/gwr/gwr_localR2.png 
+  versioned: true
+
 
 ## MGWR
 
@@ -361,4 +363,18 @@ mgwr_significance_maps:
 mgwr_diagnostics_plot:
   type: matplotlib.MatplotlibWriter
   filepath: data/08_reporting/mgwr/mgwr_diagnostics_plot.png 
+  versioned: true
+
+
+# GWR and MGWR models with random search
+gwr_random_search:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/gwr/gwr_random_search.pkl
+  backend: pickle
+  versioned: true
+
+mgwr_random_search:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/mgwr/mgwr_random_search.pkl
+  backend: pickle
   versioned: true
