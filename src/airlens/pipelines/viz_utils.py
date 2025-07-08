@@ -27,5 +27,6 @@ def variables_shortnames_dict():
         'discontinuous_dense_urban_fabric_sl_50_80': 'dense_urban_50_80',
         'green_urban_areas': 'green_urban',
         'industrial_commercial_public_military_and_private_units': 'industrial_area',
-        'other_roads_and_associated_land': 'other_roads'
+        'other_roads_and_associated_land': 'other_roads',
+        'continuous_urban_fabric_sl_80': 'continuous_urban_80'
     }
