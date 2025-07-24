@@ -41,7 +41,7 @@ def viz_pollutant(gdf: gpd.GeoDataFrame,
 
     gdf.plot(
         column=pollutant_column,
-        cmap='OrRd',
+        cmap='coolwarm', # 'OrRd',
         scheme='quantiles',
         k=5,
         edgecolor=None,
