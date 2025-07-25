@@ -74,7 +74,8 @@ traffic_timestamp_format: "%Y-%m-%d %H:%M:%S%z"
 traffic_count_col: "traffic_count"
 traffic_sites_ID: "thing_id"
 
-## NOT-NEEDED PARAMS for Hamburg data, set to null
+## NOT-NEEDED PARAMS for Hamburg data, 
+## cause not available in data, thus set to null
 start_hour: null
 end_hour: null
 traffic_ID_locationfile: null
@@ -88,6 +89,6 @@ mgwr_kernel: "bisquare"
 
 # random search
 exhaustive_search: "all"
-n_random_search: 100
+n_random_search: 200
 test_model_1: "GWR"
 test_model_2: "MGWR"

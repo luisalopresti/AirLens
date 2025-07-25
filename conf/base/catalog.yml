@@ -315,29 +315,29 @@ maps_covariates:
 
 gwr_model:
   type: pickle.PickleDataset
-  filepath: data/07_model_output/gwr_model.pkl
+  filepath: data/07_model_output/ED_level/gwr_model.pkl
   backend: pickle
   versioned: true
 
 gwr_significance:
   type: pickle.PickleDataset
-  filepath: data/07_model_output/gwr_significance.pkl
+  filepath: data/07_model_output/ED_level/gwr_significance.pkl
   backend: pickle
   versioned: true
 
 gwr_significance_maps:
   type: matplotlib.MatplotlibWriter
-  filepath: data/08_reporting/gwr/gwr_significance_maps.png 
+  filepath: data/08_reporting/gwr/ED_level/gwr_significance_maps.png 
   versioned: true
 
 gwr_diagnostics_plot:
   type: matplotlib.MatplotlibWriter
-  filepath: data/08_reporting/gwr/gwr_diagnostics_plot.png 
+  filepath: data/08_reporting/gwr/ED_level/gwr_diagnostics_plot.png 
   versioned: true
 
 gwr_localR2:
   type: matplotlib.MatplotlibWriter
-  filepath: data/08_reporting/gwr/gwr_localR2.png 
+  filepath: data/08_reporting/gwr/ED_level/gwr_localR2.png 
   versioned: true
 
 
@@ -345,36 +345,43 @@ gwr_localR2:
 
 mgwr_model:
   type: pickle.PickleDataset
-  filepath: data/07_model_output/mgwr_model.pkl
+  filepath: data/07_model_output/ED_level/mgwr_model.pkl
   backend: pickle
   versioned: true
 
 mgwr_significance:
   type: pickle.PickleDataset
-  filepath: data/07_model_output/mgwr_significance.pkl
+  filepath: data/07_model_output/ED_level/mgwr_significance.pkl
   backend: pickle
   versioned: true
 
 mgwr_significance_maps:
   type: matplotlib.MatplotlibWriter
-  filepath: data/08_reporting/mgwr/mgwr_significance_maps.png 
+  filepath: data/08_reporting/mgwr/ED_level/mgwr_significance_maps.png 
   versioned: true
 
 mgwr_diagnostics_plot:
   type: matplotlib.MatplotlibWriter
-  filepath: data/08_reporting/mgwr/mgwr_diagnostics_plot.png 
+  filepath: data/08_reporting/mgwr/ED_level/mgwr_diagnostics_plot.png 
+  versioned: true
+
+
+# GWR-MGWR BANDWIDTH COMPARISON
+bandwidth_radarchart:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/gwr_mgwr_bandwidth_radarchart.png 
   versioned: true
 
 
 # GWR and MGWR models with random search
 gwr_random_search:
   type: pickle.PickleDataset
-  filepath: data/07_model_output/gwr/gwr_random_search.pkl
+  filepath: data/07_model_output/gwr/ED_level/gwr_random_search.pkl
   backend: pickle
   versioned: true
 
 mgwr_random_search:
   type: pickle.PickleDataset
-  filepath: data/07_model_output/mgwr/mgwr_random_search.pkl
+  filepath: data/07_model_output/mgwr/ED_level/mgwr_random_search.pkl
   backend: pickle
   versioned: true
