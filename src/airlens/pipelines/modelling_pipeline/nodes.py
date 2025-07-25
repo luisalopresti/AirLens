@@ -3,6 +3,7 @@ import pandas as pd
 import geopandas as gpd
 import re
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from typing import Optional, Tuple, List
 from typing import Union, Literal
 from collections import Counter
@@ -17,6 +18,7 @@ from pysal.lib import weights
 
 import itertools 
 import random
+import math
 
 from ..viz_utils import variables_shortnames_dict
 
@@ -428,6 +430,122 @@ def run_mgwr_model(air_gdf: gpd.GeoDataFrame,
     }
     return res
 
+
+
+def create_radarchart(data_list, 
+                      labels, 
+                      legends,
+                      num_spatial_units,
+                      X_VERTICAL_TICK_PADDING,
+                      X_HORIZONTAL_TICK_PADDING,
+                      COLORS):
+    '''
+    Plot radarchart.
+
+    Inputs:
+        - data_list: list of list of the same length; 
+                    each list must contain one value for each vertex of the radarchart
+        - labels: list of string; one name for each vertex of the radarchart
+        - legend: list of string, must be same length as data_list. 
+                  represent the legend name for each list in data_list
+        - num_spatial_units: total number of unit (max of the radarchart)
+        - X_VERTICAL_TICK_PADDING: vertical label padding from plot (on even ticks)
+        - X_HORIZONTAL_TICK_PADDING: horizontal label padding from plot (on odd ticks)
+        - COLORS: list of color codes, one for element in data_list
+    '''
+    plt.style.use('seaborn-v0_8')
+
+    num_vars = len(labels)
+    angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
+    angles += angles[:1] # close the loop
+
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+
+    # plot
+    for data, label, color in zip(data_list, legends, COLORS):
+        data_extended = data + data[:1]
+        ax.plot(angles, data_extended, label=label, color=color, lw=2, marker="o", markersize=8)
+        ax.fill(angles, data_extended, alpha=0.1, color=color)
+
+    ax.set_theta_offset(np.pi / 2)
+    ax.set_theta_direction(-1)
+    ax.set_thetagrids(np.degrees(angles[:-1]), labels, fontsize=14)
+    ax.set_rlabel_position(0)
+    ax.set_ylim(0, int(math.ceil(num_spatial_units / 10) * 10))
+    ax.set_title("Bandwidths Comparison", size=16, pad=16)
+
+    # legend handles (markers + lines)
+    handles = [
+        Line2D([], [], c=color, lw=2, marker="o", markersize=8, label=label)
+        for label, color in zip(legends, COLORS)
+    ]
+
+    legend = ax.legend(
+        handles=handles,
+        loc=(1, 0), # legend bottom-right outside plot
+        labelspacing=1.5, # space between labels
+        frameon=True # legend frame
+    )
+
+    for text in legend.get_texts():
+        # legend font size
+        text.set_fontsize(12)
+
+    # tick label padding
+    XTICKS = ax.xaxis.get_major_ticks()
+
+    for i, tick in enumerate(XTICKS):
+        if i % 2 == 0:
+            tick.set_pad(X_VERTICAL_TICK_PADDING)
+        else:
+            tick.set_pad(X_HORIZONTAL_TICK_PADDING)
+
+    plt.tight_layout()
+    return fig
+
+
+def bandwidth_radarchart(gwr_results, 
+                         mgwr_results,
+                         X_VERTICAL_TICK_PADDING = 15,
+                         X_HORIZONTAL_TICK_PADDING = 25,
+                         COLORS = [ "#a9a9a9", "#007ad2", "#b60428"]):
+    '''
+    Returns radarchart of bandwidth of different models (i.e., Global, GWR and MGWR),
+    for comparison of spatial effects (global vs local).
+    Simple application of the `create_radarchart` function.
+
+    Input:
+        - gwr_results: dictionary of GWR results (must contain key `gwr_bandwidth`)
+        - mgwr_results: dictionary of GWR results (must contain keys `gwr_params` and `gwr_bandwidth`)
+        - X_VERTICAL_TICK_PADDING: vertical label padding from plot (on even ticks)
+        - X_HORIZONTAL_TICK_PADDING: horizontal label padding from plot (on odd ticks)
+        - COLORS: list of 3 color codes, one for bandwidth of each model
+    
+    Returns radarchart.
+    '''
+    # labels
+    labels = mgwr_results['gwr_params'].columns.to_list()
+    labels.remove('Intercept')
+    # rename labels
+    labels = [variables_shortnames_dict()[lab] for lab in labels]
+
+    # num vars and units
+    num_vars = len(labels)
+    num_spatial_units = len(mgwr_results['gwr_params'])
+
+    # bandwiths
+    GWR = [gwr_results['gwr_bandwidth']] * num_vars
+    MGWR = mgwr_results['gwr_bandwidth'][1:].tolist() # [1:] to remove intercept bw
+    Global = [len(mgwr_results['gwr_params'])] * num_vars # for global model (ie OLS)
+
+    # return radarchart
+    return create_radarchart(data_list=[Global, GWR, MGWR], 
+                             labels=labels, 
+                             legends=["Global", "GWR", "MGWR"], 
+                             num_spatial_units=num_spatial_units,
+                             X_VERTICAL_TICK_PADDING = X_VERTICAL_TICK_PADDING,
+                             X_HORIZONTAL_TICK_PADDING = X_HORIZONTAL_TICK_PADDING,
+                             COLORS = COLORS)
 
 
 ## -------------------------------------------------------------
