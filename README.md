@@ -2,6 +2,35 @@
 
 [![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
 
+
+## Data 
+The project uses [Google Air View - measurements data](https://insights.sustainability.google/labs/airquality) as the primary data source, integrating covariates variables derived from the city data portals, OpenStreetMap, and Copernicus Urban Atlas.  
+Detailed information on all data sources and how to retrive them are provided in the dedicated [README](https://github.com/luisalopresti/AirLens/blob/main/notebooks/data_sources/README.md).
+
+
+## Run Pipelines on Different Case Studies
+Kedro supports [multiple configuration environments](https://docs.kedro.org/en/0.19.14/configuration/configuration_basics.html#how-to-specify-additional-configuration-environments), which can be defined in the `conf` directory.  
+To run the pipeline on different case studies, one may create a new configuration environment as a `conf` subfolder, and run nodes or pipelines based on it. For instance, to run a generic node on the `hamburg` environment (loaded from `conf/hamburg/`), one may use the following:
+```
+kedro run --env=hamburg --nodes <node_name>
+```
+In this project, the `base` environment refers to **Dublin (Ireland)** case study, while `hamburg` refers to **Hamburg (Germany)**.
+
+Similarly, to execute a whole pipeline for a given environment, one may run:
+```
+kedro run --env=hamburg --pipeline <pipeline_name>
+```
+
+While to visualize outputs within the kedro pipeline, one may use:
+```
+kedro viz --env=<config_environment_name>
+```
+
+If no enviroment is specified, the `base` configuration will be used by default.
+
+
+
+## Default kedro readme
 ## Overview
 
 This is your new Kedro project, which was generated using `kedro 0.19.12`.
