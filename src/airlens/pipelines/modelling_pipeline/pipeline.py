@@ -4,6 +4,7 @@ from .nodes import analyze_gwr_significance
 from .nodes import plot_gwr_coefficients_from_summary
 from .nodes import plot_gwr_diagnostics
 from .nodes import GWR_local_R2
+from .nodes import bandwidth_radarchart
 from .nodes import gwr_with_random_search
 
 def create_pipeline(**kwargs):
@@ -107,6 +108,21 @@ def create_pipeline(**kwargs):
             name="mgwr_diagnostics"
         ),
 
+
+
+        ## GWR-MGWR BANDWIDTH COMPARISON PLOT
+        node(
+            func=bandwidth_radarchart,
+            inputs={
+                "gwr_results":"gwr_model",
+                "mgwr_results":"mgwr_model"
+            },
+            outputs="bandwidth_radarchart",
+            name="bandwidth_radarchart"
+        ),
+
+
+
         ## GWR with RANDOM SEARCH OF BEST COVARIATES COMBINATIONS
         node(
             func=gwr_with_random_search,
@@ -142,13 +158,3 @@ def create_pipeline(**kwargs):
         )
     ])
 
-
-## TODO: RE-CHECK CORRECTNESS OF MGWR PLOTS
-
-## ALSO: DETERMINE BEST CHOICE FOR KERNEL FOR NO2 --> USED EXPONENTIAL, MAYBE BISQUARE BETTER? --> chosen via AIC/AICc
-
-## TODO: RUN EXHAUSTIVE SEARCH FOR BEST MODEL???
-## TODO: ADD OPTIONAL SPATIAL CROSS VALIDATION FOR GWR 
-# (mgwr implementation does not have predict attribute duw to multiple bandwidth complexity)
-
-## TODO: comment input and outputs for all functions, across all pipelines
