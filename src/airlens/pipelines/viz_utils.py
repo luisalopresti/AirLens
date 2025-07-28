@@ -24,7 +24,7 @@ def variables_shortnames_dict():
         'hw_ratio': 'hw_ratio',
         'count_trees': 'tree_count',
         'canopy_cover': 'canopy',
-        'discontinuous_dense_urban_fabric_sl_50_80': 'dense_urban_50_80',
+        'discontinuous_dense_urban_fabric_sl_50_80': 'dense_urban',
         'green_urban_areas': 'green_urban',
         'industrial_commercial_public_military_and_private_units': 'industrial_area',
         'other_roads_and_associated_land': 'other_roads',

@@ -199,6 +199,9 @@ def plot_gwr_coefficients_from_summary(gwr_significance_output: dict,
     Generate coefficient plots for predictors
     with at least one region significant at alpha = 0.05
     '''
+    # labels dict, to get short variable names for plot title
+    abbreviation_dict = variables_shortnames_dict()
+
     # extract all needed elements from significance analysis
     model_name = re.findall(r'\((.*?)\)', gwr_significance_output['model_info'])[0]
     air_gdf = gwr_significance_output["air_gdf_with_coeffs"]
@@ -263,7 +266,7 @@ def plot_gwr_coefficients_from_summary(gwr_significance_output: dict,
         # axes[i,1].set_title(f'GWR: {chosen_variable} - significant coeffs (0.05)', fontsize=12)
         # axes[i,2].set_title(f'GWR: {chosen_variable} - significant coeffs (corrected alpha)', fontsize=12)
 
-        axes[i,0].set_title(f'{model_name}: {chosen_variable}', fontsize=12)
+        axes[i,0].set_title(f'{model_name}: {abbreviation_dict[chosen_variable]}', fontsize=12)
         axes[i,1].set_title(f'{model_name}: Significant coeffs (alpha = 0.05)', fontsize=12)
         axes[i,2].set_title(f'{model_name}: Significant coeffs (corrected alpha)', fontsize=12)
 
