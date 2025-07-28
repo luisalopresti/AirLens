@@ -456,7 +456,7 @@ def create_radarchart(data_list,
         - X_HORIZONTAL_TICK_PADDING: horizontal label padding from plot (on odd ticks)
         - COLORS: list of color codes, one for element in data_list
     '''
-    plt.style.use('seaborn-v0_8')
+    # plt.style.use('seaborn-v0_8')
 
     num_vars = len(labels)
     angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
