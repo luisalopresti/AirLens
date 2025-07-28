@@ -13,7 +13,7 @@ def variables_shortnames_dict():
         'extension': 'ext',
         'linearity': 'lin',
         'meshedness': 'mesh',
-        'connectivity': 'conn',
+        'connectivity': 'connectivity',
         'low_access': 'low_acc',
         'major_road': 'major_rd',
         'width': 'width',
@@ -28,5 +28,5 @@ def variables_shortnames_dict():
         'green_urban_areas': 'green_urban',
         'industrial_commercial_public_military_and_private_units': 'industrial_area',
         'other_roads_and_associated_land': 'other_roads',
-        'continuous_urban_fabric_sl_80': 'continuous_urban_80'
+        'continuous_urban_fabric_sl_80': 'continuous_urban'
     }
