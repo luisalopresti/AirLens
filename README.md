@@ -13,10 +13,7 @@ Our work has the merit of integrating multiple dimensions of the urban environme
 ## Project Structure
 
 The project is divided into several pipelines, as recorded in the pipeline registry at `src/airlens/pipeline_registry.py`.  
-The full project can be run using the command:
-```
-kedro run
-```
+The full project can be run using the `kedro run` command, but modular execution may be desirable.
 
 The pipelines are executed in the following order:
 ```
