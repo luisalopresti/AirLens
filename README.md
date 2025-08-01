@@ -118,7 +118,7 @@ To execute the full project use the following command:
 kedro run
 ```
 
-One may also run individual pipelines or groups of pipeline, as defined in the `pipeline_registry`, using the following:
+One may also run individual pipelines or groups of pipelines, as defined in the `pipeline_registry`, using the following:
 ```
 kedro run --pipeline <pipeline_name>
 ```
