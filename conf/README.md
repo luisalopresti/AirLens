@@ -1,4 +1,4 @@
-# What is this for?
+# Configuration Setup
 
 This folder should be used to store configuration files used by Kedro or by separate tools.
 
@@ -138,4 +138,4 @@ Valhalla parameters have been encoded according to GIS-OPS Valhalla Docker image
 
 ## Need help?
 
-[Find out more about configuration from the Kedro documentation](https://docs.kedro.org/en/0.18.14/configuration/index.html).
+[Find out more about configuration from the Kedro documentation](https://docs.kedro.org/en/0.19.12/configuration/index.html).
