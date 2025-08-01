@@ -1,6 +1,6 @@
 # AirLens
 
-[![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
+[![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)  
 This project was developed using `kedro 0.19.12`.
 
 ## Introduction
@@ -12,7 +12,7 @@ Our work has the merit of integrating multiple dimensions of the urban environme
 
 ## Project Structure
 
-The project is divided into several pipeline, as recorded in the pipeline registry at `src/airlens/pipeline_registry.py`.  
+The project is divided into several pipelines, as recorded in the pipeline registry at `src/airlens/pipeline_registry.py`.  
 The full project can be run using the command:
 ```
 kedro run
@@ -105,43 +105,58 @@ To support reproducibility and ease of use, we have prepared dedicated README fi
 |External reference: Valhalla Docker | Docker Image used for map-matching of vehicle's trajectories. | [GIS-OPS Valhalla Docker Image README.md](https://github.com/nilsnolde/docker-valhalla/blob/master/README.md) |
 
 
+## Project Dependencies
 
-## Run Pipelines on Different Case Studies
-Kedro supports [multiple configuration environments](https://docs.kedro.org/en/0.19.14/configuration/configuration_basics.html#how-to-specify-additional-configuration-environments), which can be defined in the `conf` directory.  
-To run the pipeline on different case studies, one may create a new configuration environment as a `conf` subfolder, and run nodes or pipelines based on it. For instance, to run a generic node on the `hamburg` environment (loaded from `conf/hamburg/`), one may use the following:
-```
-kedro run --env=hamburg --nodes <node_name>
-```
-In this project, the `base` environment refers to **Dublin (Ireland)** case study, while `hamburg` refers to **Hamburg (Germany)**.
-
-Similarly, to execute a whole pipeline for a given environment, one may run:
-```
-kedro run --env=hamburg --pipeline <pipeline_name>
-```
-
-While to visualize outputs within the kedro pipeline, one may use:
-```
-kedro viz --env=<config_environment_name>
-```
-
-If no enviroment is specified, the `base` configuration will be used by default.
-
-
-
-
-## Project dependencies
-
-Declare any dependencies in `requirements.txt` for `pip` installation.
-
-To install them, run:
+All dependencies can be installed using the following command:
 
 ```
 pip install -r requirements.txt
 ```
+It is reccomended to set up a new virtual environment prior to installations.
+
+
+## How to run this Kedro project
+To execute the full project use the following command:
+```
+kedro run
+```
+
+One may also run individual pipelines or groups of pipeline, as defined in the `pipeline_registry`, using the following:
+```
+kedro run --pipeline <pipeline_name>
+```
+
+or individual nodes via:
+```
+kedro run --nodes <node_name>
+```
+
+
+## Execute Different Case Studies
+Kedro supports [multiple configuration environments](https://docs.kedro.org/en/0.19.12/configuration/configuration_basics.html#how-to-specify-additional-configuration-environments), which can be defined in the `conf` directory. Each environment should follow the guidelines detailed in the [Configuration Setup README](https://github.com/luisalopresti/AirLens/blob/main/conf/README.md).  
+To execute the project on different case studies, one should create its specific configuration environment.
+In this project, the `base` environment refers to **Dublin (Ireland)** case study, while `hamburg` refers to **Hamburg (Germany)**.
+To run the full project on Hamburg case study (`hamburg` configuration environment), one shall use:
+```
+kedro run --env=hamburg 
+```
+Similarly, indidual pipelines and nodes can be executed as:
+```
+kedro run --env=hamburg --nodes <pipeline_name>
+
+kedro run --env=hamburg --pipeline <node_name>
+```
+If no environment is specified, the `base` will be used by default.
+
+
+## Visualizing the Kedro Pipelines
+For a visual inspection of the project run:
+```
+kedro viz --env=<config_environment_name>
+```
 
 
 
+## More about Kedro
 
-
-
-For any other queries about Kedro, please refer to the [Kedro documentation](https://docs.kedro.org/en/0.19.12/introduction/index.html).
+For any other queries related to Kedro, please refer to the [Kedro documentation](https://docs.kedro.org/en/0.19.12/introduction/index.html).
