@@ -94,7 +94,7 @@ The main dataset used in this project consists of hyperlocal air quality measure
 To support reproducibility and ease of use, we have prepared dedicated README files for each major step of the workflow. The table below provides direct links to these resources.
 
 
-| Step / Component                 | Description                                                | Link to README |
+| Step                  | Description                                                | Link to README |
 |----------------------------------|------------------------------------------------------------|----------------|
 |Configuration Setup               | Explanation of environment folders (`base`, `hamburg`), `config.yml`, and `parameters.yml`. | [conf/README.md](https://github.com/luisalopresti/AirLens/blob/main/conf/README.md)|
 |Data Sources                      | Overview of required input datasets. | [notebooks/data_sources/README.md](https://github.com/luisalopresti/AirLens/blob/main/notebooks/data_sources/README.md)|
