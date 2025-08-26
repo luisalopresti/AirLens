@@ -220,7 +220,7 @@ def plot_gwr_coefficients_from_summary(gwr_significance_output: dict,
                     scheme = 'FisherJenks', 
                     k=5, 
                     legend=True, 
-                    legend_kwds={'bbox_to_anchor':(1.10, 0.96)},  
+                    legend_kwds={'bbox_to_anchor':(1.9, 1), 'fontsize': 19},  
                     ax=axes[i,0])
 
         air_gdf.plot(column=f'gwr_{chosen_variable}', 
@@ -229,7 +229,6 @@ def plot_gwr_coefficients_from_summary(gwr_significance_output: dict,
                     scheme = 'FisherJenks', 
                     k=5, 
                     legend=False, 
-                    legend_kwds={'bbox_to_anchor':(1.10, 0.96)},  
                     ax=axes[i, 1])
         
         air_alpha = air_gdf[gwr_filtered_t[:,i+1] == 0]
@@ -247,7 +246,6 @@ def plot_gwr_coefficients_from_summary(gwr_significance_output: dict,
                     scheme = 'FisherJenks', 
                     k=5, 
                     legend=False, 
-                    legend_kwds={'bbox_to_anchor':(1.10, 0.96)}, 
                     ax=axes[i,2])
         
         air_alpha_corrected = air_gdf[gwr_filtered_tc[:,i+1] == 0]
@@ -266,9 +264,9 @@ def plot_gwr_coefficients_from_summary(gwr_significance_output: dict,
         # axes[i,1].set_title(f'GWR: {chosen_variable} - significant coeffs (0.05)', fontsize=12)
         # axes[i,2].set_title(f'GWR: {chosen_variable} - significant coeffs (corrected alpha)', fontsize=12)
 
-        axes[i,0].set_title(f'{model_name}: {abbreviation_dict[chosen_variable]}', fontsize=12)
-        axes[i,1].set_title(f'{model_name}: Significant coeffs (alpha = 0.05)', fontsize=12)
-        axes[i,2].set_title(f'{model_name}: Significant coeffs (corrected alpha)', fontsize=12)
+        axes[i,0].set_title(f'{model_name}: {abbreviation_dict[chosen_variable]}', fontsize=27)
+        axes[i,1].set_title(r'Significant coeffs ($\alpha$ = 0.05)', fontsize=27)
+        axes[i,2].set_title(r'Significant coeffs (corrected $\alpha$)', fontsize=27)
 
     return fig
 
@@ -294,6 +292,8 @@ def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
         - crs_metric: CRS for distance calculations
         - figsize: tuple, figure size
     '''
+    title_size, label_size = 20, 15
+
     # extract model name
     model_name = re.findall(r'\((.*?)\)', gwr_results['model_info'])[0]
     
@@ -340,16 +340,20 @@ def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
         legend=True, legend_kwds={'shrink': 0.6}
     )
     ctx.add_basemap(ax0, crs=crs_latlon)
-    ax0.set_title(f'{model_name} Residuals\n' + moran_caption, fontsize=14)
+    ax0.set_title(f'{model_name} Residuals\n' + moran_caption, fontsize=title_size)
     ax0.axis('off')
+
+    colorbar = ax0.get_figure().axes[-1]
+    colorbar.tick_params(labelsize=label_size) # increse number size on colorbar
 
     # Standard Deviation Bar Chart
     ax1 = fig.add_subplot(gs[0, 1])
     ax1.bar(predictors, predictors_std, color="#7EBDFD")
-    ax1.set_title('Spatial Non-Stationarity', fontsize=14)
-    ax1.set_ylabel('Coefficient Std')
+    ax1.set_title('Spatial Non-Stationarity', fontsize=title_size)
+    ax1.set_ylabel('Coefficient Std', fontsize=label_size)
+    ax1.tick_params(axis='y', labelsize=label_size)
     ax1.set_xticks(range(len(predictors)))
-    ax1.set_xticklabels(predictors, rotation=45, ha='right')
+    ax1.set_xticklabels(predictors, rotation=45, ha='right', fontsize=label_size)
 
     # Coefficient Range Plot
     ax2 = fig.add_subplot(gs[1, 1])
@@ -362,10 +366,11 @@ def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
         yerr=asymmetric_error, fmt='o', color="#2279CF",
         ecolor='gray', capsize=5, markersize=6
     )
-    ax2.set_title('Coefficient Ranges (Min-Max)', fontsize=14)
-    ax2.set_ylabel('Coefficient Estimate')
+    ax2.set_title('Coefficient Ranges (Min-Max)', fontsize=title_size)
+    ax2.set_ylabel('Coefficient Estimate', fontsize=label_size)
+    ax2.tick_params(axis='y', labelsize=label_size)
     ax2.set_xticks(range(len(predictors)))
-    ax2.set_xticklabels(predictors, rotation=45, ha='right')
+    ax2.set_xticklabels(predictors, rotation=45, ha='right', fontsize=label_size)
 
     return fig
 
@@ -374,18 +379,21 @@ def GWR_local_R2(modelling_gdf: gpd.GeoDataFrame,
                  gwr_results: dict):
     '''Plot Local R2 Map for GWR'''
     modelling_gdf['gwr_localR2'] = gwr_results['gwr_model'].localR2
-    fig, ax = plt.subplots(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
     modelling_gdf.plot(column = 'gwr_localR2', 
                        cmap = 'coolwarm', 
                        linewidth = 0.01, 
                        scheme = 'FisherJenks', 
                        k = 5, 
                        legend = True, 
-                       legend_kwds = {'loc': 'upper right'}, # 'bbox_to_anchor':(1.10, 0.96)
+                       legend_kwds = {'loc': 'upper left', 
+                                      # 'bbox_to_anchor': (1.05, 1),
+                                      'fontsize':14}, 
                        ax = ax)
     ctx.add_basemap(ax, crs=modelling_gdf.crs)
-    ax.set_title('GWR Local R2', fontsize=12)
+    ax.set_title('GWR Local R2', fontsize=20)
     ax.axis("off")
+    # plt.subplots_adjust(right=0.7) # add space on right to accomodate legend
     return fig
 
 ## -------------------------------------------------------------
