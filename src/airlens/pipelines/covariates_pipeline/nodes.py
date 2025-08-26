@@ -319,14 +319,13 @@ def plot_covariates_maps(air_gdf: gpd.GeoDataFrame,
             ax=axes[i],
             legend=True,
             legend_kwds={
-                'bbox_to_anchor': (1.05, 1),
+                'bbox_to_anchor': (1, 1),
                 'loc': 'upper left',
-                'fontsize': 9,
-                'title': col,
-                'title_fontsize': 10
+                'fontsize': 19,
+                'fmt': '{:.3f}'
             }
         )
-        axes[i].set_title(col, fontsize=13)
+        axes[i].set_title(col, fontsize=27)
         axes[i].axis('off')
 
     # hide unused subplots
