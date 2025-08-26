@@ -139,9 +139,9 @@ kedro run --env=hamburg
 ```
 Similarly, indidual pipelines and nodes can be executed as:
 ```
-kedro run --env=hamburg --nodes <pipeline_name>
+kedro run --env=hamburg --nodes <node_name>
 
-kedro run --env=hamburg --pipeline <node_name>
+kedro run --env=hamburg --pipeline <pipeline_name>
 ```
 If no environment is specified, the `base` will be used by default.
 
