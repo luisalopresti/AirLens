@@ -3,6 +3,18 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from typing import Optional
 
+'''
+Created on May 19, 2025
+
+@author: Luisa Lo Presti
+
+Functions overview:
+
+1. temporal_trends -> produces basic visualizations of temporal trends and patterns of the target pollutant;
+                    may aid in initial exploration of temperal dimension of air quality data.
+
+'''
+
 def temporal_trends(cleaned_air_gdf: gpd.GeoDataFrame,
                      pollutant_column: str,
                      timestamp_column: str,

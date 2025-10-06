@@ -15,6 +15,31 @@ from matplotlib.figure import Figure
 from ..viz_utils import variables_shortnames_dict
 
 
+'''
+Created on June 9, 2025
+
+@author: Luisa Lo Presti
+
+Functions overview:
+
+1. combine_covariates -> merges all the computed covariates to the air quality dataset, returning a 
+                        single geodataframe with all variables of interest.
+
+2. covariates_filtering -> filters the obtained covariates according to their correlation with the target pollutant
+                            and their coefficient of variability, to ensure retaining only the most pertinent variables.
+
+3. plot_correlation_matrix -> produces plot of correlation matrix between target pollutant and filtered covariates.
+
+4. plot_variable_distributions -> produces plot of histograms of all numeric variables.
+
+5. reduce_multicollinearity -> applies the Variance Inflation Factor (VIF) to reduce multicollinearity and increase
+                                reliability of the analysis.
+
+6. plot_covariates_maps -> plot a map for each numeric variable (target + covariates), each map colored according
+                            to the variable value for each spatial unit.
+'''
+
+
 def combine_covariates(air_gdf: gpd.GeoDataFrame,
                         traffic_gdf: Optional[gpd.GeoDataFrame] = None,
                         building_gdf: Optional[gpd.GeoDataFrame] = None,
@@ -54,6 +79,7 @@ def covariates_filtering(cov_gdf: gpd.GeoDataFrame,
                          pollutant_column: str,
                          corr_threshold: float = 0.2,
                          coeff_variability_threshold: float = 0.1) -> gpd.GeoDataFrame:
+    '''Filter covariates according to correlation with target pollutant and coefficient of variabililty.'''
     gdf = cov_gdf.copy()
 
     # 1. CORRELATION FILTERING

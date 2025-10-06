@@ -23,6 +23,44 @@ import math
 from ..viz_utils import variables_shortnames_dict
 
 
+
+'''
+Created on June 11, 2025
+
+@author: Luisa Lo Presti
+
+Functions overview:
+
+1. prepare_gwr_data -> data preparation for GWR/MGWR modelling.
+
+2. gwr_model -> implementation of GWR model with bandwith optimization.
+
+3. run_gwr_model -> executes GWR model and stores retults as a dictionary.
+
+4. analyze_gwr_significance -> analyses spatial coefficients and significance and return significance
+                                numeric analysis as a dictionary.
+
+5. plot_gwr_coefficients_from_summary -> plots spatial coefficients on maps.
+
+6. plot_gwr_diagnostics -> model diagnostic plots: residuals map + Global Moran's I, 
+                            standard deviation of coefficient estimates, coefficient ranges.
+
+7. GWR_local_R2 -> returns map of local R-squared values for the fitted GWR model.
+
+
+
+8. mgwr_model -> implementation of MGWR model with bandwith optimization.
+
+9. run_mgwr_model -> executes MGWR model and stores retults as a dictionary.
+
+10. bandwidth_radarchart (+ helper function create_radarchart) -> produces radarchart to compare bandwidths of each covariate across models
+                                                                (global OLS vs GWR vs MGWR); useful to analyse of global vs local covariates in MGWR.
+
+11. gwr_with_random_search -> (optional) optimization of best explanatory variables combination
+                            using random search; not necessary for explanatory analysis.
+'''
+
+
 ## -------------------------------------------------------------
 ##               GEOGRAPHICALLY WEIGHTED REGRESSION
 ## -------------------------------------------------------------

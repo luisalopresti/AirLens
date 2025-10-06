@@ -3,6 +3,19 @@ import pandas as pd
 from shapely.geometry import box
 from typing import Optional
 
+'''
+Created on June 9, 2025
+
+@author: Luisa Lo Presti
+
+Functions overview:
+
+1. trees_in_unit -> assign street trees to each spatial unit.
+
+2. tree_features -> for each spatial units, computes number of trees and canopy cover.
+
+'''
+
 def trees_in_unit(tree_gdf: gpd.GeoDataFrame,
                   air_gdf: gpd.GeoDataFrame):
     '''

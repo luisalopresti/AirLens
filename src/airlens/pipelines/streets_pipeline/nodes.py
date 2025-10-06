@@ -7,6 +7,30 @@ from .topography_indicators import street_extension
 from .topography_indicators import compute_meshedness_per_region
 from .topography_indicators import street_connectivity
 
+'''
+Created on June 6, 2025
+
+@author: Luisa Lo Presti
+
+Functions overview:
+
+1. clip_geometries_within -> clips roads geometries so that each subpart is completely contained within
+                            a single spatial unit.
+
+2. get_road_class_len_per_spatialunit -> compute total length (in meter) of "main road" and "low access road" 
+                                        within each spatial unit. The "main road" vs "low access road" classification
+                                        is done according to OSM highway tag, with values classified as "main road" 
+                                        specified via the `major_road_types` parameter.
+
+3. normalize_len_by_area -> normalize total length of major road and low access road by spatial unit area;
+                            important when units have different sizes.
+
+4. street_indicators -> computes street network mophology metrics relying on `topography_indicators.py`.
+
+5. merge_indicators_and_class -> merge in a single geodataframe information mophology metrics and
+                                "main road" vs "low access road" classification information.
+'''
+
 
 
 def clip_geometries_within(gdf_to_clip, gdf_mask, mask_id_col='SpatialUnitID'):

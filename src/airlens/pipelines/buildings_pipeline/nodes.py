@@ -8,6 +8,23 @@ from typing import Optional
 
 from .buildings_morphology import fractal_dimension, shape_compactness, building_adjacency
 
+'''
+Created on June 6, 2025
+
+@author: Luisa Lo Presti
+
+Functions overview:
+
+1. raster_to_building_gdf -> reads geoTIFF containing buildings data and produces a geodataframe from it.
+
+2. clip_to_bbox -> filters buildings geodataframe according to the area of interest.
+
+3. compute_buildings_morph_prop -> computes buildings morphology metrics, 
+                                    with the assistance of `buildings_morphology.py` functions.
+
+4. aggregate_buildings_spatially -> aggregates the computed metrics at the selected spatial unit level.
+'''
+
 
 def raster_to_building_gdf(rds: xr.DataArray) -> gpd.GeoDataFrame:
     '''Read geoTiff and transform to gdf'''

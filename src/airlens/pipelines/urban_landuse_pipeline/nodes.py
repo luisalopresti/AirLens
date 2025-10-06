@@ -3,11 +3,24 @@ import geopandas as gpd
 from shapely.geometry import box
 from typing import Optional
 
+'''
+Created on June 9, 2025
+
+@author: Luisa Lo Presti
+
+Functions overview:
+
+1. landuse_to_unit -> prepares landuse data and assign them to corresponding spatial unit.
+
+2. landuse_features -> computes the percentage of the area covered by each urban landuse for each spatial unit.
+
+'''
+
 def landuse_to_unit(landuse_gdf: gpd.GeoDataFrame,
                     air_gdf: gpd.GeoDataFrame,
                     landuse_column: str = 'class_2018'):
     '''
-    Prepare landuse data and assing them to corresponding spatial unit.
+    Prepare landuse data and assign them to corresponding spatial unit.
 
     1. Ensure landuse gdf only contains data for the area of interest 
     2. Clip landuse polygons when covering more than one spatial unit

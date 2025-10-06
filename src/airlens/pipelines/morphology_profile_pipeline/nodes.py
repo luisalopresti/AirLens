@@ -3,6 +3,18 @@ import geopandas as gpd
 import momepy
 from typing import Optional
 
+'''
+Created on June 9, 2025
+
+@author: Luisa Lo Presti
+
+Functions overview:
+
+1. compute_street_profile -> compute street profile metrics from buildings and road data,
+                            relying on momepy implementation (street_profile function).
+
+'''
+
 def compute_street_profile(clipped_roads_gdf: gpd.GeoDataFrame,
                             building_gdf: gpd.GeoDataFrame,
                             height_col: str = "height",
