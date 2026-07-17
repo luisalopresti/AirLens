@@ -393,21 +393,39 @@ def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
     ax1.set_xticks(range(len(predictors)))
     ax1.set_xticklabels(predictors, rotation=45, ha='right', fontsize=label_size)
 
-    # Coefficient Range Plot
-    ax2 = fig.add_subplot(gs[1, 1])
-    lower_errors = predictors_median - predictors_min
-    upper_errors = predictors_max - predictors_median
-    asymmetric_error = [lower_errors, upper_errors]
+    # # Coefficient Range Plot
+    # ax2 = fig.add_subplot(gs[1, 1])
+    # lower_errors = predictors_median - predictors_min
+    # upper_errors = predictors_max - predictors_median
+    # asymmetric_error = [lower_errors, upper_errors]
 
-    ax2.errorbar(
-        x=range(len(predictors)), y=predictors_median,
-        yerr=asymmetric_error, fmt='o', color="#2279CF",
-        ecolor='gray', capsize=5, markersize=6
+    # ax2.errorbar(
+    #     x=range(len(predictors)), y=predictors_median,
+    #     yerr=asymmetric_error, fmt='o', color="#2279CF",
+    #     ecolor='gray', capsize=5, markersize=6
+    # )
+    # ax2.set_title('Coefficient Ranges (Min-Max)', fontsize=title_size)
+    # ax2.set_ylabel('Coefficient Estimate', fontsize=label_size)
+    # ax2.tick_params(axis='y', labelsize=label_size)
+    # ax2.set_xticks(range(len(predictors)))
+    # ax2.set_xticklabels(predictors, rotation=45, ha='right', fontsize=label_size)
+
+    ## VIOLIN PLOT 
+    ax2 = fig.add_subplot(gs[1,1])
+    ax2.violinplot(
+        [params[:,i] for i in range(params.shape[1])],
+        showmeans=True,
+        showmedians=True
     )
-    ax2.set_title('Coefficient Ranges (Min-Max)', fontsize=title_size)
-    ax2.set_ylabel('Coefficient Estimate', fontsize=label_size)
+
+    ax2.axhline(0, ls='--', color='gray')
+
+    ax2.set_title("Distribution of Local Coefficients", fontsize=title_size)
+    ax2.set_ylabel("Coefficient Estimate", fontsize=label_size)
+
     ax2.tick_params(axis='y', labelsize=label_size)
-    ax2.set_xticks(range(len(predictors)))
+
+    ax2.set_xticks(range(1, len(predictors)+1))
     ax2.set_xticklabels(predictors, rotation=45, ha='right', fontsize=label_size)
 
     return fig
