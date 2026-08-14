@@ -85,8 +85,8 @@ def moran_plots(gdf, pollutant, lisa):
     axs[0].text(x_mid_neg, y_mid_pos, 'LH', fontsize=20, color='r', ha='center', va='center')
     axs[0].text(x_mid_neg, y_mid_neg, 'LL', fontsize=20, color='r', ha='center', va='center')
 
-    axs[0].set_xlabel('Standardized ' + pollutant)
-    axs[0].set_ylabel('Spatial Lag of Standardized ' + pollutant)
+    axs[0].set_xlabel('Mean-centered ' + pollutant)
+    axs[0].set_ylabel('Spatial Lag of Mean-centered ' + pollutant)
     axs[0].set_title('Moran Scatterplot')
     axs[0].grid(True)
 
