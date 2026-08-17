@@ -14,6 +14,8 @@ ED_min_obs_count: null
 spatial_unit_2_hex: "hex"
 hex_min_obs_count: 0.1
 spatial_unit_3_road: "road"
+road_buffer_context: 100 # meter
+road_min_obs_count: 0.1
 
 
 ## parameters to process the street network
