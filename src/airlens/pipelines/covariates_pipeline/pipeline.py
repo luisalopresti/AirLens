@@ -12,7 +12,7 @@ def create_pipeline(**kwargs):
         node(
             func=combine_covariates,
             inputs={
-                "air_gdf":"ED_aggregated_air",
+                "air_gdf":"road_aggregated_air",
                 "traffic_gdf":"air_traffic_gdf",
                 "building_gdf":"air_build_morph_gdf",
                 "road_gdf":"air_road_gdf",
