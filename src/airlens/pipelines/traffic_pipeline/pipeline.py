@@ -39,7 +39,7 @@ def create_pipeline(**kwargs):
         node(
             func=aggregate_traffic_spatially,
             inputs={
-                "air_gdf":"ED_aggregated_air",
+                "air_gdf":"road_aggregated_air",
                 "site_avg_traffic_gdf":"gdf_traffic_count",
                 "crs_metric":"params:crs_metric"
             },

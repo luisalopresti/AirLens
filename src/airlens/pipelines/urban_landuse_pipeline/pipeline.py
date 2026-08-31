@@ -8,7 +8,7 @@ def create_pipeline(**kwargs):
             func=landuse_to_unit,
             inputs={
                 "landuse_gdf":"urban_atlas_landuse",
-                "air_gdf":"ED_aggregated_air"
+                "air_gdf":"road_aggregated_air"
                 },
             outputs="landuse_to_unit",
             name="landuse_to_unit"
@@ -20,7 +20,7 @@ def create_pipeline(**kwargs):
             func=landuse_features,
             inputs={
                 "landuse_gdf":"landuse_to_unit",
-                "air_gdf":"ED_aggregated_air",
+                "air_gdf":"road_aggregated_air",
                 "crs_metric":"params:crs_metric"
             },
             outputs="landuse_perc_per_unit",
