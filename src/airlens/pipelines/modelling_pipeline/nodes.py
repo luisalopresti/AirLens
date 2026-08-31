@@ -313,6 +313,7 @@ def plot_gwr_coefficients_from_summary(gwr_significance_output: dict,
 def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
                         gwr_results: dict,
                         pollutant_column: str,
+                        weight_dist_band: float = 500., 
                         crs_latlon: Optional[str] = "EPSG:4326",
                         crs_metric: Optional[str] = "EPSG:3857",
                         figsize: tuple = (14, 10)):
@@ -326,6 +327,7 @@ def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
         - air_gdf: GeoDataFrame with input data
         - gwr_results: object containing fitted GWR model 
         - pollutant_column: name of the target variable column
+        - weight_dist_band: distance band to compute residuals autocorrelation (in meters).
         - crs_latlon: CRS for plotting
         - crs_metric: CRS for distance calculations
         - figsize: tuple, figure size
@@ -355,7 +357,7 @@ def plot_gwr_diagnostics(air_gdf: gpd.GeoDataFrame,
         gdf_residuals.to_crs(crs_metric).geometry.centroid.x,
         gdf_residuals.to_crs(crs_metric).geometry.centroid.y
     ))
-    w = weights.DistanceBand(coords, threshold=2000, silence_warnings=True)
+    w = weights.DistanceBand(coords, threshold=weight_dist_band, silence_warnings=True)
     mi = esda.Moran(gwr_model.resid_response, w)
     moran_caption = f"Moran's I = {mi.I:.3f}, p = {mi.p_sim:.3f}"
 
