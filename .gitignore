@@ -13,6 +13,9 @@ conf/**/*credentials*
 # ignore everything in the following folders
 data/**
 data
+data_road_25m/
+data_road_50m/
+data_hex_res9/
 data-hamburg/**
 data-hamburg
 
