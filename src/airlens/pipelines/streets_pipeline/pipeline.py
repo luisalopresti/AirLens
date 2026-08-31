@@ -13,7 +13,7 @@ def create_pipeline(**kwargs):
             func=get_road_class_len_per_spatialunit,
             inputs={
                 "place_name":"params:place_name",
-                "air_gdf":"ED_aggregated_air",
+                "air_gdf":"road_aggregated_air",
                 "crs_metric":"params:crs_metric"},
             outputs="len_street_class_per_unit",
             name="streetclass_len"
@@ -22,7 +22,7 @@ def create_pipeline(**kwargs):
         node(
             func=normalize_len_by_area,
             inputs={
-                "air_gdf":"ED_aggregated_air",
+                "air_gdf":"road_aggregated_air",
                 "length_per_spatialunit":"len_street_class_per_unit",
                 "crs_metric":"params:crs_metric"
             },
@@ -34,7 +34,9 @@ def create_pipeline(**kwargs):
             func=clip_geometries_within,
             inputs={
                 "gdf_to_clip":"OSM_road_net", 
-                "gdf_mask":"ED_aggregated_air"
+                "gdf_mask":"road_aggregated_air",
+                "crs_metric":"params:crs_metric",
+                "spatial_unit_type":"params:spatial_unit_3_road"
             },
             outputs="clip_street",
             name="clip_street"
@@ -44,7 +46,7 @@ def create_pipeline(**kwargs):
             func=street_indicators,
             inputs={
                 "street_gdf":"clip_street",
-                "air_gdf":"ED_aggregated_air",
+                "air_gdf":"road_aggregated_air",
                 "crs_metric":"params:crs_metric"
             },
             outputs="air_road_morph_gdf",

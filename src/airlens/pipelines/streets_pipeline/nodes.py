@@ -1,6 +1,7 @@
 import geopandas as gpd
 import pandas as pd
 from typing import Optional, List
+import warnings
 
 from .streets_utils import download_osm_street_data, classify_streets_binary
 from .topography_indicators import street_extension
@@ -33,7 +34,12 @@ Functions overview:
 
 
 
-def clip_geometries_within(gdf_to_clip, gdf_mask, mask_id_col='SpatialUnitID'):
+def clip_geometries_within(gdf_to_clip, gdf_mask, 
+                           mask_id_col='SpatialUnitID', 
+                           crs_metric: Optional[str] = "EPSG:3857",
+                           spatial_unit_type: Optional[str] = None,
+                           min_sliver_len = 0.1 # meter
+                           ):
     ''' 
     Clips geometries from gdf_to_clip so that each feature is entirely contained 
     within a single polygon from gdf_mask. 
@@ -49,24 +55,39 @@ def clip_geometries_within(gdf_to_clip, gdf_mask, mask_id_col='SpatialUnitID'):
                         and a new ID column, containing IDs of the Spatial Unit
                         they belong to.
     '''
+    original_crs = gdf_mask.crs
+
+    # if spatial unit is road segments -> no clip, assign road segment to SpatialUnitID
+    if spatial_unit_type == 'road':
+        road_geoms = gdf_mask[[mask_id_col, 'original_road_geom']].copy()
+        road_geoms.rename(columns={'original_road_geom':'geometry'}, inplace=True)
+        return gpd.GeoDataFrame(road_geoms, geometry='geometry', crs=original_crs)
+
+    # clip road network to region
+    gdf_mask = gdf_mask.to_crs(crs_metric)
     gdf_to_clip = gdf_to_clip.to_crs(gdf_mask.crs)
 
     clipped_segments = []
 
-    # loop over polygons to get geoms fully contained in each polygon
-    # (don't lose any part of the geometry across all polygons; 
-    # geoms just get split into parts, each associated with the polygon it overlaps with)
+    # loop over polygons to get geoms fully contained in each polygon;
+    # geoms just get split into parts, each associated with the polygon it overlaps with
     for _, polygon_row in gdf_mask.iterrows():
         # clip the roads to the polygon geometry
-        clipped = gpd.clip(gdf_to_clip, polygon_row.geometry)
+        poly_gdf = gpd.GeoSeries([polygon_row.geometry], crs=crs_metric)
+        clipped = gpd.clip(gdf_to_clip, poly_gdf)
         if not clipped.empty:
-            # add the polygon's index or id to clipped segments for join
-            clipped = clipped.copy()
-            clipped[mask_id_col] = polygon_row[mask_id_col]
-            clipped_segments.append(clipped)
+            # avoid sliver geoms
+            clipped = clipped[clipped.geometry.type.isin(['LineString', 'MultiLineString'])]
+            clipped = clipped[clipped.geometry.length > min_sliver_len]
+            if not clipped.empty:
+                # add the polygon's index or id to clipped segments for join
+                clipped = clipped.copy()
+                clipped[mask_id_col] = polygon_row[mask_id_col]
+                clipped_segments.append(clipped)
 
     if clipped_segments:
-        return gpd.GeoDataFrame(pd.concat(clipped_segments, ignore_index=True), crs=gdf_to_clip.crs)
+        res = gpd.GeoDataFrame(pd.concat(clipped_segments, ignore_index=True), crs=gdf_to_clip.crs)
+        return res.to_crs(original_crs)
     else:
         raise ValueError("No geometry in `gdf_to_clip` intersect the polygons in `gdf_mask`.")
     
