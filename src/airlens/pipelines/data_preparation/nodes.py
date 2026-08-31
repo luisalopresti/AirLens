@@ -14,9 +14,11 @@ import matplotlib.pyplot as plt
 import contextily as ctx
 import seaborn as sns
 import shapely
+from shapely.ops import linemerge
 import warnings
 
 from .OSMRoadAssembler.process_roads import *
+from .OSMRoadAssembler.segment_by_bearing import process_road_bearing
 from .Valhalla_map_matching import process_single_date
 from .spatiotemporal_outlier_detection import temporal_outlier_detection, best_LOF
 from .spatial_aggregation import assign_pt_to_ED, assign_pt_to_hex, assign_point_to_road
@@ -64,11 +66,14 @@ def OSM_roads(place_name: str,
                                 'blvd': 'boulevard'
                                 },
               words_to_rm: List[str] = ['street', 'st', 'road', 'rd', 'square', 'ave', 'avenue', 'drive'],
+              bearing_split: int = 35, # degree
+              min_segment_m: int = 20, # meter
+              max_segment_m: int = 150, # meter
               crs_metric: str = 'EPSG:2157', 
               crs_latlon: str = 'EPSG:4326') -> gpd.GeoDataFrame:
     '''
     This function uses the OSMRoadAssembler to create a street network representation
-    suitable for analysis departing from OpenStreetMap data.
+    suitable for analysis departing from OpenStreetMap data, with added bearing-based partitioning.
     Other network representations can be use for all the analysis in this project,
     this is the one we propose. Source code for building this network representation 
     can be found at: https://github.com/luisalopresti/OSMRoadAssembler
@@ -110,7 +115,19 @@ def OSM_roads(place_name: str,
     for col in ['standardized_name', 'name', 'highway', 'osmid']:
         final_edges[col] = final_edges[col].astype(str)
 
-    return final_edges
+
+    # ----------------------------------------------------------------
+    #           Obtain coherent road segments via bearing analysis
+    # ----------------------------------------------------------------
+
+    final_edges.to_crs(crs_metric, inplace=True)
+
+    # apply linemerge to the geometry column
+    final_edges['geometry'] = final_edges['geometry'].apply(lambda geom: linemerge(geom) if geom.geom_type == 'MultiLineString' else geom)
+    # process road segments according to bearing change
+    road_segments = process_road_bearing(final_edges, angle_threshold=bearing_split, min_length_meters=min_segment_m, max_length_meters=max_segment_m)
+
+    return road_segments.to_crs(crs_latlon)
 
 
 
@@ -530,9 +547,10 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
                               timestamp_column: str,
                               spatial_unit: Literal["ed", "hex", "road"] = "hex",
                               ed_gdf: Optional[gpd.GeoDataFrame] = None,
-                              resolution: Optional[int] = 8,
+                              resolution: Optional[int] = 9, 
                               road_gdf: Optional[gpd.GeoDataFrame] = None,
                               min_quantile_threshold: Optional[float] = None,
+                              buffer_connected_components: Optional[float] = None,
                               crs_latlon: Optional[str] = "EPSG:4326",
                               crs_metric: Optional[str] = "EPSG:3857"):
     '''
@@ -578,7 +596,12 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
     ## remove islands (disconnected components) if any - expecially in hexagonal aggregation
     print('Checking for disconnected components...')
     units = gdf_assigned_to_unit.drop_duplicates(subset=['SpatialUnitID'])[['SpatialUnitID', 'geometry']].reset_index(drop=True)
-    connected_units = get_largest_connected_component(units, crs_metric)
+    if buffer_connected_components is None and spatial_unit == 'road':
+        # add buffer around roads for connectivity (if not provided as input); not automatic for polygonal units
+        buffer_connected_components = 100 # meters
+        connected_units = get_largest_connected_component(units, crs_metric, buffer_connected_components)
+    else:
+        connected_units = get_largest_connected_component(units, crs_metric)
     gdf_assigned_to_unit = gdf_assigned_to_unit[gdf_assigned_to_unit.SpatialUnitID.isin(connected_units.SpatialUnitID)].reset_index(drop=True)
 
 
@@ -606,6 +629,14 @@ def aggregate_to_spatial_unit(pt_gdf: gpd.GeoDataFrame,
             UserWarning)
         aggr_df.dropna(subset=[pollutant_column], inplace=True)
         aggr_df.reset_index(inplace=True)
+
+    # add buffer to road spatial unit to define their urban context (save original geom in another column)
+    # --> polygonal spatial units for all ed, hex, road
+    # buffer_connected_components -> default 100 meters
+    if spatial_unit == 'road':
+        aggr_df['original_road_geom'] = aggr_df['geometry'].copy()
+        aggr_df['geometry'] = aggr_df.to_crs(crs_metric).buffer(buffer_connected_components).to_crs(crs_latlon)
+        aggr_df.set_geometry('geometry', inplace=True)
 
     return num_obs_per_unit, aggr_df
 
