@@ -18,7 +18,7 @@ def create_pipeline(**kwargs):
         node(
             func=clip_to_bbox,
             inputs=["building_gdf", 
-                    "ED_aggregated_air"],
+                    "road_aggregated_air"],
             outputs="building_gdf_clipped",
             name="building_gdf_clip"
         ),
@@ -34,7 +34,7 @@ def create_pipeline(**kwargs):
         node(
             func=aggregate_buildings_spatially,
             inputs=["building_morphology_gdf",
-                    "ED_aggregated_air",
+                    "road_aggregated_air",
                     "params:crs_metric"],
             outputs="air_build_morph_gdf",
             name="aggr_build_morph"
