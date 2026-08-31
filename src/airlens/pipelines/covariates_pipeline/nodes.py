@@ -72,34 +72,72 @@ def combine_covariates(air_gdf: gpd.GeoDataFrame,
     # remove rows (units) with missing values for covariates ## NOTE quick fix for empty hex (at the margin of study area)
     merged = merged.dropna()
 
-    return gpd.GeoDataFrame(merged, geometry='geometry', crs=air_gdf.crs)
+    merged = gpd.GeoDataFrame(merged, geometry='geometry', crs=air_gdf.crs)
+
+    # remove to harmonize computation with other units (origal road geom stored with id)
+    if "original_road_geom" in merged.columns:
+        merged = merged.drop(columns=['original_road_geom'])
+
+    return merged
 
 
 def covariates_filtering(cov_gdf: gpd.GeoDataFrame, 
                          pollutant_column: str,
-                         corr_threshold: float = 0.2,
+                         corr_threshold: float = 0.2, # min corr with target
+                         cov_corr_threshold = 0.5, # max corr among covariates
                          coeff_variability_threshold: float = 0.1) -> gpd.GeoDataFrame:
-    '''Filter covariates according to correlation with target pollutant and coefficient of variabililty.'''
+    '''Filter covariates according to correlation with target pollutant, collinearity and coefficient of variability.'''
     gdf = cov_gdf.copy()
+
+    auxiliary_cols = ['SpatialUnitID', 'geometry']
 
     # 1. CORRELATION FILTERING
     # drop predictors with (abs) low corr with target
-    correlations = gdf.drop(columns=['SpatialUnitID', 'geometry']).corr().abs()
-    covs_to_keep = correlations[correlations[pollutant_column] > corr_threshold].index.to_list()
-    covs_to_keep.extend(['SpatialUnitID', 'geometry'])
+    correlations = gdf.drop(columns=auxiliary_cols).corr().abs()
+
+    corr_w_poll = correlations[pollutant_column].reset_index().rename(columns={"index": "covariate", pollutant_column: "corr_with_pollutant"})
+    corr_w_poll = corr_w_poll[corr_w_poll['covariate'] != pollutant_column]
+
+    # filter by corr with target pollutant
+    corr_w_poll = corr_w_poll[corr_w_poll.corr_with_pollutant.abs() > corr_threshold]
+
+
+    # 2. FILTER HIGHLY COLLINEAR VARIABLE
+    # AMONG TWO COLLINEAR VARS KEEP THE ONE WITH HIGHEST CORR WITH TARGET (RELYING ON SORTING)
+    corr_w_poll = corr_w_poll.sort_values(by=['corr_with_pollutant'], key=abs, ascending=False).reset_index(drop=True)
+
+    candidate_covs = corr_w_poll.covariate.to_list()
+
+    selected_covs = []
+    for cov in candidate_covs:
+        is_redundant = False
+
+        # check if corr with features already selected
+        for other_cov in selected_covs:
+            if abs(correlations.loc[cov, other_cov]) > cov_corr_threshold:
+                is_redundant = True
+                break
+                
+        if not is_redundant:
+            selected_covs.append(cov)
+
+    if len(selected_covs) < 1:
+        raise ValueError('No covariates passed the checks')
+    
+    covs_to_keep = selected_covs + [pollutant_column] + auxiliary_cols
     gdf = gdf[covs_to_keep]
 
     # 2. COEFFICIENT OF VARIABILITY FILTERING
     # check coefficient of variability and 
     # filter out low variation 
     # (0.1-0.5 is considered low tomoderate range)
-    covariates_cols = gdf.columns.drop(['SpatialUnitID', 'geometry'])
+    covariates_cols = gdf.columns.drop(auxiliary_cols+[pollutant_column])
     summary_stats = pd.DataFrame({
         # 'mean': gdf[covariates_cols].mean(),
         # 'std': gdf[covariates_cols].std(),
         # 'min': gdf[covariates_cols].min(),
         # 'max': gdf[covariates_cols].max(),
-        'coef_variation': gdf[covariates_cols].std() / gdf[covariates_cols].mean() # [0, inf]
+        'coef_variation': gdf[covariates_cols].std() / gdf[covariates_cols].mean().abs() # [0, inf]
     })
     low_var = summary_stats[summary_stats['coef_variation'] < coeff_variability_threshold].index.to_list()
     if len(low_var)!=0:
