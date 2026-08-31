@@ -107,13 +107,13 @@ def create_pipeline(**kwargs):
                 "timestamp_column": "params:timestamp_column",
                 "spatial_unit" : "params:spatial_unit_2_hex", 
                 "min_quantile_threshold": "params:hex_min_obs_count", # filter min num obs per hexagon
-                # "resolution" default value 8
+                # "resolution" default value 9
                 "crs_latlon" : "params:crs_latlon"
             },
             outputs=["hex_sampling_plot", "hex_aggregated_air"],
             name="hex_aggr"
         ),
-        ## ROADS (computationally more expensive but optimized):
+        ## ROADS 
         node(
             func=aggregate_to_spatial_unit,
             inputs={
@@ -122,6 +122,8 @@ def create_pipeline(**kwargs):
                 "timestamp_column" : "params:timestamp_column",
                 "spatial_unit" : "params:spatial_unit_3_road", 
                 "road_gdf" : "OSM_road_net",
+                "min_quantile_threshold" : "params:road_min_obs_count",
+                "buffer_connected_components": "params:road_buffer_context",
                 "crs_latlon" : "params:crs_latlon",
                 "crs_metric" : "params:crs_metric"
             },
