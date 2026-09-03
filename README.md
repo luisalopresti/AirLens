@@ -7,8 +7,7 @@ This project was developed using `kedro 0.19.12`.
 This project investigates hyperlocal urban air quality using high-resolution spatial measurements to understand how different urban forms influence pollutant concentration patterns. By combining GIS-based analysis with spatial statistical modelling techniques, we identify both pollution hotspots and coldspots, and uncover the complex spatial interactions between urban forms and air quality.  
 Our data-driven approach enables the detection of both local variations and global spatial trends, revealing how different configurations of street networks, built environments, land use types, and urban greenery contribute to the amplification or mitigation of pollution, uncovering relationships that are unique to the urban context under study.
 The exploration of variable interactions, including the strength, direction, and spatial heterogeneity of their associations, provides actionable insights into how urban design influences air pollution dynamics at local and city-wide scale.
-
-Our work has the merit of integrating multiple dimensions of the urban environment, through numerous data sources, and conducting analysis across spatial units of varying scales and shapes, explicitly addressing the Modifiable Areal Unit Problem (MAUP). Additionally, we propose tools to assess the spatial equity of all outcomes, supporting more just and informed urban decision-making.
+Our work has the merit of integrating multiple dimensions of the urban environment, through numerous data sources, and conducting analysis across spatial units of varying scales and shapes, explicitly addressing the Modifiable Areal Unit Problem (MAUP). 
 
 ## Project Structure
 
